@@ -235,7 +235,7 @@ function tipsFor(words){
 }
 
 /* ---------- voice out ---------- */
-const APP_VERSION = "2026-11-01c";
+const APP_VERSION = "2026-11-01d";
 /* every button answers right where you tapped: no silent failures */
 function note(msg, kind=""){ const s = $("#say-status"); if (!s) return; s.textContent = msg; s.className = "say-status" + (kind ? " "+kind : ""); }
 const HAS_TTS = "speechSynthesis" in window && "SpeechSynthesisUtterance" in window;
@@ -350,7 +350,11 @@ function renderCats(){
 function renderDict(){
   const q = fold($("#dict-q").value), words = q.split(/\s+/).filter(Boolean);
   let list = DICT.filter(d => (dictCat==="All" || (dictCat==="★ Saved" ? saved.has(d.es) : d.cat===dictCat)) && words.every(w => d.key.includes(w)));
-  if (q) list.sort((a,b) => { const sa = fold(a.es).startsWith(q)||fold(a.en).startsWith(q) ? 0 : 1, sb = fold(b.es).startsWith(q)||fold(b.en).startsWith(q) ? 0 : 1; return sa-sb || a.es.length-b.es.length; });
+  if (q) {
+    const wordStart = new RegExp("(^|\\s)" + q.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"));
+    const rank = d => wordStart.test(fold(d.es)) ? 0 : wordStart.test(fold(d.en)) ? 1 : 2;   // a match in the word itself beats a match in a note
+    list.sort((a,b) => rank(a)-rank(b) || a.es.length-b.es.length);
+  }
   $("#dict-count").textContent = DICT.length ? `${list.length} of ${DICT.length} entries${list.length>80?" · showing the first 80, type more to narrow it":""}` : "The offline dictionary is coming in an update today. Open Sofía with a signal later and it will appear here.";
   $("#dict-list").replaceChildren(...list.slice(0,80).map(d => {
     const row = document.createElement("div"); row.className = "entry";
