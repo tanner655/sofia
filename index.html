@@ -1,0 +1,267 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Sofía</title>
+<meta name="theme-color" content="#0B8F9C">
+<meta name="description" content="Sofía: Mexican Spanish voice practice. Say it, get checked, hear it back.">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icon-192.png">
+<link rel="apple-touch-icon" href="icon-192.png">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;700;800&family=Nunito+Sans:opsz,wght@6..12,400;6..12,600;6..12,700&family=DM+Mono:wght@400;500&display=swap">
+<style>
+/* Sofía Voice Coach: runs in Chrome on Tanner's PC (the mic can't run inside a Claude page). Same look as the Spanish Class page. */
+:root{--bg:#F2F7F6;--panel:#fff;--soft:#E6F1EF;--ink:#16232A;--muted:#55686E;--line:#CFDDDB;--sea:#0B8F9C;--sea-soft:#D3EEEF;--rose:#D93B68;--rose-soft:#F9DCE5;--gold:#E8A023;--gold-soft:#FBEBCB;--jungle:#1E5A45;--jungle-soft:#D9ECE3;
+--display:"Baloo 2","Trebuchet MS",system-ui,sans-serif;--body:"Nunito Sans","Segoe UI",system-ui,sans-serif;--mono:"DM Mono",ui-monospace,Consolas,monospace}
+@media (prefers-color-scheme: dark){:root{--bg:#0E1719;--panel:#152225;--soft:#1A2B2F;--ink:#E6F0EF;--muted:#9AB0B3;--line:#284044;--sea:#3CC4CF;--sea-soft:#123437;--rose:#F06A92;--rose-soft:#3A1A25;--gold:#F2B850;--gold-soft:#3A2C12;--jungle:#5FC59A;--jungle-soft:#14302A;color-scheme:dark}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--body);font-size:16px;line-height:1.5}
+.wrap{max-width:980px;margin:0 auto;padding:0 16px 48px;display:flex;flex-direction:column;gap:20px}
+.picado{height:30px;display:flex;overflow:hidden;margin:0 -16px}
+.picado i{flex:1 0 44px;height:30px;clip-path:polygon(0 0,100% 0,100% 72%,85% 100%,70% 72%,50% 100%,30% 72%,15% 100%,0 72%)}
+.picado i:nth-child(4n+1){background:var(--rose)}.picado i:nth-child(4n+2){background:var(--gold)}.picado i:nth-child(4n+3){background:var(--sea)}.picado i:nth-child(4n){background:var(--jungle)}
+h1,h2{font-family:var(--display);margin:0;line-height:1.05}
+h1{font-size:clamp(36px,6vw,58px)} h1 span{color:var(--rose)}
+.muted{color:var(--muted)}
+.bar{display:flex;flex-wrap:wrap;gap:10px;align-items:end}
+.bar label{display:flex;flex-direction:column;gap:3px;font-size:13px;color:var(--muted)}
+select,input[type=text]{font:inherit;color:inherit;border:1.5px solid var(--line);border-radius:10px;padding:8px 10px;background:var(--panel)}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:18px;padding:18px 20px}
+.list{display:flex;flex-direction:column;gap:6px;max-height:260px;overflow-y:auto}
+.item{display:flex;justify-content:space-between;gap:10px;align-items:center;border:1px solid var(--line);border-radius:12px;padding:8px 12px;background:var(--bg);cursor:pointer;text-align:left;font:inherit;color:inherit}
+.item.sel{border-color:var(--sea);box-shadow:0 0 0 2px var(--sea)}
+.item b{font-family:var(--display);font-size:18px}
+.item small{color:var(--muted)}
+.target{font-family:var(--display);font-size:clamp(30px,5vw,46px);font-weight:800;line-height:1.1}
+.syl{font-family:var(--mono);font-size:18px;color:var(--jungle);margin-top:6px}
+.btns{display:flex;flex-wrap:wrap;gap:10px;margin-top:14px}
+.btn{border:0;border-radius:999px;padding:12px 20px;font:inherit;font-weight:700;cursor:pointer;background:var(--sea);color:#fff}
+.btn.ghost{background:transparent;color:var(--ink);border:1.5px solid var(--line)}
+.btn.mic{background:var(--rose);font-size:18px;padding:14px 26px}
+.btn.mic.on{animation:pulse 1s infinite}
+@keyframes pulse{50%{box-shadow:0 0 0 10px color-mix(in srgb,var(--rose) 25%,transparent)}}
+@media (prefers-reduced-motion:reduce){.btn.mic.on{animation:none;outline:4px solid var(--rose)}}
+.result{margin-top:16px;display:flex;flex-direction:column;gap:10px}
+.words{display:flex;flex-wrap:wrap;gap:6px}
+.w{border-radius:10px;padding:4px 10px;font-weight:700;font-size:18px}
+.w.ok{background:var(--jungle-soft);color:var(--jungle)}
+.w.miss{background:var(--rose-soft);color:var(--rose)}
+.heard{font-family:var(--mono);font-size:14px;color:var(--muted)}
+.score{font-family:var(--display);font-size:30px}
+.tips{display:flex;flex-direction:column;gap:6px}
+.tip{background:var(--gold-soft);border-radius:12px;padding:8px 12px;font-size:14.5px}
+.tip b{font-family:var(--mono);font-size:12px;color:var(--gold);letter-spacing:.06em;text-transform:uppercase;margin-right:6px}
+.break{display:flex;flex-wrap:wrap;gap:8px}
+.break button{font:inherit;border:1.5px solid var(--line);background:var(--bg);border-radius:12px;padding:6px 10px;cursor:pointer}
+.break b{color:var(--rose)}
+.history{display:flex;flex-direction:column;gap:4px;font-size:14px}
+.warn{background:var(--rose-soft);color:var(--rose);border-radius:12px;padding:10px 12px;font-weight:600}
+/* phone layout */
+.wrap{padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-bottom:calc(48px + env(safe-area-inset-bottom,0px))}
+@media (max-width:640px){
+  .bar label,.bar .btn{flex:1 1 100%}
+  .btns .btn{flex:1 1 calc(50% - 10px)}
+  .btns .btn.mic{flex:1 1 100%;font-size:20px;padding:16px}
+  .card{padding:14px 14px}
+  .list{max-height:42vh}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="picado" id="picado" aria-hidden="true"></div>
+  <header>
+    <div class="muted" style="font-family:var(--mono);font-size:12px;letter-spacing:.12em;text-transform:uppercase">Español mexicano · voice practice</div>
+    <h1>Sofía <span>Voice Coach</span></h1>
+    <p class="muted" style="margin:4px 0 0">Pick a phrase, press 🎤 and say it. Sofía checks every word with a Mexican-Spanish ear, breaks the hard words into syllables and says it back to you.</p>
+  </header>
+  <div class="warn" id="warn" hidden></div>
+
+  <div class="card">
+    <div class="bar">
+      <label>Your name<input type="text" id="who" placeholder="Your first name" maxlength="20" autocomplete="given-name"></label>
+      <label>Lesson<select id="night"></select></label>
+      <label style="flex:1 1 240px">Or type any Spanish phrase<input type="text" id="free" placeholder="¿Dónde está la alberca?"></label>
+      <button class="btn ghost" id="use-free" type="button">Practise this</button>
+    </div>
+    <div class="list" id="list" style="margin-top:12px"></div>
+  </div>
+
+  <div class="card">
+    <div class="muted" id="en"></div>
+    <div class="target" id="target">Pick a phrase above</div>
+    <div class="syl" id="syl"></div>
+    <div class="btns">
+      <button class="btn" id="play" type="button">🔊 Hear it</button>
+      <button class="btn ghost" id="slow" type="button">🐢 Slowly</button>
+      <button class="btn mic" id="mic" type="button">🎤 Say it</button>
+    </div>
+    <div class="result" id="result"></div>
+  </div>
+
+  <div class="card">
+    <h2 style="font-size:24px">Tonight's attempts</h2>
+    <div class="history" id="history"><span class="muted">Nothing yet.</span></div>
+  </div>
+  <p class="muted" style="font-size:13px">Voice: <span id="voice-name">loading…</span>. Speech recognition is your phone's (needs the internet). It checks whether a Mexican-Spanish ear understood each word, not fine accent detail. To install: Chrome menu ⋮ → <b>Add to Home screen</b> / <b>Install app</b>.</p>
+</div>
+
+<script src="lessons.js"></script>
+<script>
+const $ = s => document.querySelector(s);
+for (let i=0;i<36;i++) $("#picado").append(document.createElement("i"));
+const LESSONS = (window.SOFIA_LESSONS || []).slice().sort((a,b)=>a.n-b.n);
+const START = window.SOFIA_START || "2026-11-01";
+
+/* ---------- Spanish syllables + stress ---------- */
+const STRONG = "aeoáéóíú", WEAK = "iuü", VOW = STRONG + WEAK;
+const INSEP = ["pl","bl","fl","cl","gl","kl","pr","br","fr","cr","gr","kr","tr","dr","tl"];
+function units(word){
+  const w = word.toLowerCase(), out = [];
+  for (let i=0;i<w.length;i++){
+    const c = w[i], n = w[i+1] || "", p = w[i-1] || "";
+    if ((c==="c"&&n==="h")||(c==="l"&&n==="l")||(c==="r"&&n==="r")) { out.push({t:c+n,v:false}); i++; continue; }
+    if ((c==="q"||c==="g") && n==="u" && "eéií".includes(w[i+2]||"")) { out.push({t:c+n,v:false}); i++; continue; }
+    if (c==="y") { const vowelish = (i===w.length-1 || !VOW.includes(n)) && i>0 && VOW.includes(p); out.push({t:c, v:vowelish, weak:true}); continue; }
+    out.push({t:c, v:VOW.includes(c), weak:WEAK.includes(c)});
+  }
+  return out;
+}
+function syllables(word){
+  const u = units(word); if (!u.some(x=>x.v)) return [word];
+  const nuc = []; // groups: [start,end] of vowel runs, split at hiatus
+  for (let i=0;i<u.length;i++){
+    if (!u[i].v) continue;
+    let j = i;
+    while (j+1<u.length && u[j+1].v && !(STRONG.includes(u[j].t) && STRONG.includes(u[j+1].t))) j++;
+    nuc.push([i,j]); i = j;
+  }
+  const cuts = [];
+  for (let k=0;k<nuc.length-1;k++){
+    const a = nuc[k][1]+1, b = nuc[k+1][0]; const cons = u.slice(a,b).map(x=>x.t); let cut;
+    if (cons.length===0) cut = a;
+    else if (cons.length===1) cut = a;
+    else if (cons.length===2) cut = INSEP.includes(cons.join("")) ? a : a+1;
+    else if (cons.length===3) cut = INSEP.includes(cons[1]+cons[2]) ? a+1 : a+2;
+    else cut = a+2;
+    cuts.push(cut);
+  }
+  const syl = []; let s = 0;
+  for (const c of cuts) { syl.push(u.slice(s,c).map(x=>x.t).join("")); s = c; }
+  syl.push(u.slice(s).map(x=>x.t).join(""));
+  return syl;
+}
+function stressIndex(syl, word){
+  const acc = syl.findIndex(s=>/[áéíóú]/.test(s)); if (acc>=0) return acc;
+  if (syl.length===1) return 0;
+  return /[aeiouns]$/.test(word.toLowerCase()) ? syl.length-2 : syl.length-1;
+}
+function breakdown(word){ const clean = word.replace(/[¿?¡!.,;:"()]/g,""); if (!clean) return null; const syl = syllables(clean); const st = stressIndex(syl, clean); return {syl, st, text: syl.map((s,i)=> i===st ? s.toUpperCase() : s).join("-")}; }
+const phraseBreak = p => p.split(/\s+/).map(w=>breakdown(w)).filter(Boolean).map(b=>b.text).join("  ");
+
+/* ---------- comparing what was heard ---------- */
+const ONES = ["cero","uno","dos","tres","cuatro","cinco","seis","siete","ocho","nueve","diez","once","doce","trece","catorce","quince","dieciséis","diecisiete","dieciocho","diecinueve","veinte","veintiuno","veintidós","veintitrés","veinticuatro","veinticinco","veintiséis","veintisiete","veintiocho","veintinueve"];
+const TENS = {3:"treinta",4:"cuarenta",5:"cincuenta",6:"sesenta",7:"setenta",8:"ochenta",9:"noventa"};
+const HUND = {1:"ciento",2:"doscientos",3:"trescientos",4:"cuatrocientos",5:"quinientos",6:"seiscientos",7:"setecientos",8:"ochocientos",9:"novecientos"};
+function numWords(n){ if (n<30) return ONES[n]; if (n<100) return TENS[Math.floor(n/10)] + (n%10 ? " y "+ONES[n%10] : ""); if (n===100) return "cien"; if (n<1000) return HUND[Math.floor(n/100)] + (n%100 ? " "+numWords(n%100) : ""); if (n===1000) return "mil"; return String(n); }
+const norm = s => s.toLowerCase().replace(/\d+/g, d => numWords(parseInt(d,10))).normalize("NFD").replace(/[̀-ͯ]/g,"").replace(/[¿?¡!.,;:"()\-]/g," ").split(/\s+/).filter(Boolean);
+function align(target, heard){
+  const T = norm(target), H = norm(heard), m = T.length, n = H.length;
+  const dp = Array.from({length:m+1},()=>Array(n+1).fill(0));
+  for (let i=m-1;i>=0;i--) for (let j=n-1;j>=0;j--) dp[i][j] = T[i]===H[j] ? dp[i+1][j+1]+1 : Math.max(dp[i+1][j], dp[i][j+1]);
+  const ok = Array(m).fill(false); let i=0,j=0;
+  while (i<m && j<n) { if (T[i]===H[j]) { ok[i]=true; i++; j++; } else if (dp[i+1][j] >= dp[i][j+1]) i++; else j++; }
+  return {ok, score: m ? Math.round(100*ok.filter(Boolean).length/m) : 0};
+}
+const shownWords = t => t.split(/\s+/).filter(w=>w.replace(/[¿?¡!.,;:"()]/g,""));
+
+/* ---------- tips for the sounds people miss ---------- */
+function tipsFor(words){
+  const t = new Set(), w = words.join(" ").toLowerCase();
+  if (/rr|(^|\s)r/.test(w)) t.add(["rr","Roll it: tongue flutters behind your top teeth. Practise \"perro\" and \"carro\"."]);
+  else if (/[aeiou]r[aeiou]/.test(w)) t.add(["r","One quick tap, like the tt in \"butter\": pe-ro, ca-ro."]);
+  if (/j|g[eéií]/.test(w)) t.add(["j / ge","A soft h from the back of the throat: jugo = HOO-goh, gente = HEN-teh."]);
+  if (/ll|y/.test(w)) t.add(["ll / y","In Mexico both sound like the y in \"yes\": llamo = YAH-moh."]);
+  if (/(^|\s)h|[aeiou]h/.test(w)) t.add(["h","Always silent: hola = OH-lah, hijo = EE-hoh."]);
+  if (/ñ/.test(w)) t.add(["ñ","ny, like canyon: año = AH-nyoh, baño = BAH-nyoh."]);
+  if (/v/.test(w)) t.add(["v","Sounds like a soft b: vamos = BAH-mohs."]);
+  if (/z|c[eéií]/.test(w)) t.add(["z / ce / ci","In Mexico these are plain s, no lisp: cinco = SEEN-koh, diez = dee-EHS."]);
+  if (/qu/.test(w)) t.add(["qu","Just a k: ¿qué? = KEH, quince = KEEN-seh."]);
+  if (/[aeiou]d[aeiou]/.test(w)) t.add(["d","Between vowels it's soft, almost the th in \"the\": nada = NAH-tha."]);
+  t.add(["vowels","Short and pure, never sliding: a = ah, e = eh, i = ee, o = oh, u = oo."]);
+  return [...t].slice(0,3);
+}
+
+/* ---------- voice out ---------- */
+let VOICE = null;
+function pickVoice(){ const vs = speechSynthesis.getVoices(); VOICE = vs.find(v=>/es[-_]MX/i.test(v.lang)) || vs.find(v=>/es[-_](US|419)/i.test(v.lang)) || vs.find(v=>/^es/i.test(v.lang)) || null; $("#voice-name").textContent = VOICE ? `${VOICE.name} (${VOICE.lang})` : "no Spanish voice found. Add Spanish (Mexico) in Windows Settings > Time & language > Speech"; }
+speechSynthesis.onvoiceschanged = pickVoice; pickVoice();
+function speak(text, rate=0.9){ return new Promise(res => { const u = new SpeechSynthesisUtterance(text); u.lang = VOICE?.lang || "es-MX"; if (VOICE) u.voice = VOICE; u.rate = rate; u.onend = res; u.onerror = res; speechSynthesis.speak(u); }); }
+
+/* ---------- picking phrases ---------- */
+let current = null;
+const who = $("#who");
+try { who.value = localStorage.getItem("sofia-who") || ""; } catch(_){}
+who.onchange = () => { try { localStorage.setItem("sofia-who", who.value.trim()); } catch(_){} };
+const tonight = Math.max(1, Math.round((new Date(new Date().toDateString()) - new Date(START+"T00:00:00"))/86400000) + 1);
+const nightSel = $("#night");
+LESSONS.forEach(L => nightSel.append(new Option(`Night ${L.n}: ${L.title}`, L.n)));
+if (!LESSONS.length) nightSel.append(new Option("No lessons loaded yet", ""));
+nightSel.value = String(Math.min(tonight, LESSONS.length ? LESSONS[LESSONS.length-1].n : 1));
+nightSel.onchange = renderList;
+function renderList(){
+  const L = LESSONS.find(x=>String(x.n)===nightSel.value), box = $("#list"); box.replaceChildren();
+  if (!L) { box.textContent = "No phrases here yet."; return; }
+  const items = [...(L.phrases||[]).map(p=>({es:p.es, en:p.en, say:p.say})), ...(L.dialogue||[]).map(d=>({es:d.es, en:`${d.who}: ${d.en}`}))];
+  for (const it of items) { const b = document.createElement("button"); b.type = "button"; b.className = "item"; b.innerHTML = "<span><b></b><br><small></small></span>"; b.querySelector("b").textContent = it.es; b.querySelector("small").textContent = it.en; b.onclick = () => { document.querySelectorAll(".item.sel").forEach(x=>x.classList.remove("sel")); b.classList.add("sel"); choose(it); }; box.append(b); }
+}
+function choose(it){ current = it; $("#target").textContent = it.es; $("#en").textContent = it.en || ""; $("#syl").textContent = phraseBreak(it.es) + (it.say ? "   ·   say: " + it.say : ""); $("#result").replaceChildren(); }
+$("#use-free").onclick = () => { const t = $("#free").value.trim(); if (t) choose({es:t, en:"Your own phrase"}); };
+$("#play").onclick = () => current && speak(current.es, 0.9);
+$("#slow").onclick = () => current && speak(current.es, 0.55);
+
+/* ---------- mic ---------- */
+const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+if (!SR) { $("#warn").hidden = false; $("#warn").textContent = "This browser can't listen. Open the Voice Coach in Google Chrome (use the desktop icon)."; $("#mic").disabled = true; }
+let rec = null;
+$("#mic").onclick = () => {
+  if (!current) { $("#warn").hidden = false; $("#warn").textContent = "Pick a phrase first."; return; }
+  if (rec) { rec.stop(); return; }
+  speechSynthesis.cancel();
+  rec = new SR(); rec.lang = "es-MX"; rec.interimResults = false; rec.maxAlternatives = 5;
+  const mic = $("#mic"); mic.classList.add("on"); mic.textContent = "🎤 Listening… (tap to stop)"; $("#warn").hidden = true;
+  rec.onresult = e => { const alts = [...e.results[0]].map(a=>a.transcript); let best = null; for (const h of alts) { const r = align(current.es, h); if (!best || r.score > best.r.score) best = {h, r}; } showResult(best.h, best.r); };
+  rec.onerror = e => { $("#warn").hidden = false; $("#warn").textContent = e.error === "not-allowed" ? "Chrome needs permission to use the microphone. Click the mic icon in the address area and allow it." : (e.error === "no-speech" ? "Didn't hear anything. Press 🎤 and speak right away." : "Couldn't listen (" + e.error + "). Check the internet and the mic."); };
+  rec.onend = () => { rec = null; mic.classList.remove("on"); mic.textContent = "🎤 Say it"; };
+  rec.start();
+};
+
+async function showResult(heard, r){
+  const box = $("#result"); box.replaceChildren();
+  const words = shownWords(current.es), missed = words.filter((_,i)=>!r.ok[i]);
+  const line = (cls, html) => { const d = document.createElement("div"); d.className = cls; d.innerHTML = html; box.append(d); return d; };
+  const praise = r.score===100 ? "¡Perfecto! 🎉" : r.score>=75 ? "¡Muy bien! Casi perfecto." : r.score>=50 ? "¡Bien! Otra vez." : "¡Vamos! Escucha y repite.";
+  line("score", `${r.score}% · ${praise}`);
+  const wbox = line("words",""); words.forEach((w,i)=>{ const s = document.createElement("span"); s.className = "w " + (r.ok[i]?"ok":"miss"); s.textContent = w; wbox.append(s); });
+  line("heard", "Heard: “" + heard.replace(/[<>&]/g,"") + "”");
+  if (missed.length) {
+    const b = line("break",""); const lab = document.createElement("div"); lab.className = "muted"; lab.style.width = "100%"; lab.textContent = "Tap a word to hear it slowly:"; b.append(lab);
+    for (const w of missed) { const bd = breakdown(w); if (!bd) continue; const btn = document.createElement("button"); btn.type = "button"; btn.innerHTML = bd.syl.map((s,i)=> i===bd.st ? "<b>"+s.toUpperCase()+"</b>" : s).join("-"); btn.onclick = () => speak(w.replace(/[¿?¡!.,]/g,""), 0.5); b.append(btn); }
+    const tips = line("tips",""); for (const [k,v] of tipsFor(missed)) { const t = document.createElement("div"); t.className = "tip"; t.innerHTML = "<b></b>"; t.querySelector("b").textContent = k; t.append(v); tips.append(t); }
+  }
+  logAttempt(r.score);
+  // Sofía says it back: the missed words slowly, then the whole phrase
+  for (const w of missed.slice(0,3)) await speak(w.replace(/[¿?¡!.,]/g,""), 0.5);
+  await speak(current.es, missed.length ? 0.7 : 0.9);
+}
+const hist = [];
+function logAttempt(score){ hist.unshift(`${who.value.trim() || "You"}: ${current.es} · ${score}%`); $("#history").replaceChildren(...hist.slice(0,15).map(t=>{ const d = document.createElement("div"); d.textContent = t; return d; })); }
+renderList();
+/* install + offline: lessons and the page work without a signal; listening needs internet */
+if ("serviceWorker" in navigator) navigator.serviceWorker.register("sw.js").catch(()=>{});
+function netNote(){ if (!navigator.onLine) { $("#warn").hidden = false; $("#warn").textContent = "No signal: you can read lessons and hear them (if your phone has a Spanish voice), but 🎤 needs internet."; } else if ($("#warn").textContent.startsWith("No signal")) $("#warn").hidden = true; }
+addEventListener("online", netNote); addEventListener("offline", netNote); netNote();
+</script>
+</body>
+</html>
