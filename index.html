@@ -11,7 +11,7 @@
 <link rel="apple-touch-icon" href="icon-192.png">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;700;800&family=Nunito+Sans:opsz,wght@6..12,400;6..12,600;6..12,700&family=DM+Mono:wght@400;500&display=swap">
 <style>
-/* Sofía Voice Coach: runs in Chrome on Tanner's PC (the mic can't run inside a Claude page). Same look as the Spanish Class page. */
+/* Sofía phone app: voice practice, score tracking, local-dialect drill, offline dictionary. Same look as the Spanish Class page. */
 :root{--bg:#F2F7F6;--panel:#fff;--soft:#E6F1EF;--ink:#16232A;--muted:#55686E;--line:#CFDDDB;--sea:#0B8F9C;--sea-soft:#D3EEEF;--rose:#D93B68;--rose-soft:#F9DCE5;--gold:#E8A023;--gold-soft:#FBEBCB;--jungle:#1E5A45;--jungle-soft:#D9ECE3;
 --display:"Baloo 2","Trebuchet MS",system-ui,sans-serif;--body:"Nunito Sans","Segoe UI",system-ui,sans-serif;--mono:"DM Mono",ui-monospace,Consolas,monospace}
 @media (prefers-color-scheme: dark){:root{--bg:#0E1719;--panel:#152225;--soft:#1A2B2F;--ink:#E6F0EF;--muted:#9AB0B3;--line:#284044;--sea:#3CC4CF;--sea-soft:#123437;--rose:#F06A92;--rose-soft:#3A1A25;--gold:#F2B850;--gold-soft:#3A2C12;--jungle:#5FC59A;--jungle-soft:#14302A;color-scheme:dark}}
@@ -21,8 +21,9 @@ body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--body);font
 .picado{height:30px;display:flex;overflow:hidden;margin:0 -16px}
 .picado i{flex:1 0 44px;height:30px;clip-path:polygon(0 0,100% 0,100% 72%,85% 100%,70% 72%,50% 100%,30% 72%,15% 100%,0 72%)}
 .picado i:nth-child(4n+1){background:var(--rose)}.picado i:nth-child(4n+2){background:var(--gold)}.picado i:nth-child(4n+3){background:var(--sea)}.picado i:nth-child(4n){background:var(--jungle)}
-h1,h2{font-family:var(--display);margin:0;line-height:1.05}
+h1,h2,h3{font-family:var(--display);margin:0;line-height:1.05}
 h1{font-size:clamp(36px,6vw,58px)} h1 span{color:var(--rose)}
+h2{font-size:24px} h3{font-size:19px;margin-top:6px}
 .muted{color:var(--muted)}
 .bar{display:flex;flex-wrap:wrap;gap:10px;align-items:end}
 .bar label{display:flex;flex-direction:column;gap:3px;font-size:13px;color:var(--muted)}
@@ -38,6 +39,7 @@ select,input[type=text]{font:inherit;color:inherit;border:1.5px solid var(--line
 .btns{display:flex;flex-wrap:wrap;gap:10px;margin-top:14px}
 .btn{border:0;border-radius:999px;padding:12px 20px;font:inherit;font-weight:700;cursor:pointer;background:var(--sea);color:#fff}
 .btn.ghost{background:transparent;color:var(--ink);border:1.5px solid var(--line)}
+.btn.small{padding:7px 14px;font-size:14px}
 .btn.mic{background:var(--rose);font-size:18px;padding:14px 26px}
 .btn.mic.on{animation:pulse 1s infinite}
 @keyframes pulse{50%{box-shadow:0 0 0 10px color-mix(in srgb,var(--rose) 25%,transparent)}}
@@ -53,7 +55,7 @@ select,input[type=text]{font:inherit;color:inherit;border:1.5px solid var(--line
 .tip{background:var(--gold-soft);border-radius:12px;padding:8px 12px;font-size:14.5px}
 .tip b{font-family:var(--mono);font-size:12px;color:var(--gold);letter-spacing:.06em;text-transform:uppercase;margin-right:6px}
 .break{display:flex;flex-wrap:wrap;gap:8px}
-.break button{font:inherit;border:1.5px solid var(--line);background:var(--bg);border-radius:12px;padding:6px 10px;cursor:pointer}
+.break button{font:inherit;border:1.5px solid var(--line);background:var(--bg);color:inherit;border-radius:12px;padding:6px 10px;cursor:pointer}
 .break b{color:var(--rose)}
 .history{display:flex;flex-direction:column;gap:4px;font-size:14px}
 .warn{background:var(--rose-soft);color:var(--rose);border-radius:12px;padding:10px 12px;font-weight:600}
@@ -61,13 +63,13 @@ select,input[type=text]{font:inherit;color:inherit;border:1.5px solid var(--line
 .say-status.bad{color:var(--rose);background:var(--rose-soft);border-radius:12px;padding:8px 12px}
 .say-status.ok{color:var(--jungle)}
 .version{font-family:var(--mono);font-size:12px;color:var(--muted)}
-/* tabs + dictionary */
+/* tabs: body[data-tab] shows the matching [data-panel] cards */
 .tabs{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
-.tab{font:inherit;font-weight:700;border:1.5px solid var(--line);background:var(--panel);color:var(--ink);border-radius:999px;padding:10px 18px;cursor:pointer}
+.tab{font:inherit;font-weight:700;border:1.5px solid var(--line);background:var(--panel);color:var(--ink);border-radius:999px;padding:10px 16px;cursor:pointer}
 .tab[aria-selected="true"]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
 .offline-badge{margin-left:auto;font-family:var(--mono);font-size:12px;color:var(--jungle)}
-body:not(.dict-mode) .dict{display:none}
-body.dict-mode .practise{display:none}
+[data-panel]{display:none}
+body[data-tab="practise"] [data-panel="practise"],body[data-tab="local"] [data-panel="local"],body[data-tab="progress"] [data-panel="progress"],body[data-tab="dict"] [data-panel="dict"]{display:block}
 #dict-q{width:100%;font:inherit;font-size:18px;color:inherit;border:2px solid var(--sea);border-radius:14px;padding:12px 14px;background:var(--panel)}
 .chips{display:flex;gap:6px;overflow-x:auto;padding:10px 0 4px;-webkit-overflow-scrolling:touch}
 .chips button{flex:none;font:inherit;font-size:13px;border:1.5px solid var(--line);background:var(--bg);color:inherit;border-radius:999px;padding:6px 12px;cursor:pointer;white-space:nowrap}
@@ -83,6 +85,35 @@ body.dict-mode .practise{display:none}
 .entry .acts button.star{background:var(--soft);color:var(--gold)}
 .entry .acts button.star[aria-pressed="true"]{background:var(--gold);color:#fff}
 .entry .acts button.go{background:var(--rose)}
+/* progress + review */
+.tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px;margin-top:10px}
+.tile{background:var(--bg);border:1px solid var(--line);border-radius:14px;padding:10px 12px}
+.tile .k{font-family:var(--mono);font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.tile .v{font-family:var(--display);font-size:34px;font-weight:800;line-height:1.1}
+.tile .s{font-size:13px;color:var(--muted)}
+.up{color:var(--jungle)} .down{color:var(--rose)}
+.rows{display:flex;flex-direction:column;gap:8px;margin-top:8px}
+.row{display:flex;gap:10px;align-items:center;justify-content:space-between;border:1px solid var(--line);border-radius:12px;padding:8px 12px;background:var(--bg)}
+.row .t{min-width:0}
+.row .t b{font-family:var(--display);font-size:17px;display:block;line-height:1.2}
+.row .t small{color:var(--muted);display:block}
+.row.flag{border-color:var(--rose);background:var(--rose-soft)}
+.row > .btn{flex:none;white-space:nowrap}
+.meter{height:10px;border-radius:99px;background:var(--soft);overflow:hidden;margin-top:4px;min-width:90px}
+.meter i{display:block;height:100%;background:var(--sea);border-radius:99px}
+.meter.lo i{background:var(--rose)} .meter.mid i{background:var(--gold)} .meter.hi i{background:var(--jungle)}
+.review{border:2px solid var(--gold);background:linear-gradient(var(--gold-soft),var(--panel) 120px)}
+.pointer{border-left:4px solid var(--gold);padding:6px 10px;margin:6px 0;background:var(--bg);border-radius:0 12px 12px 0}
+.pointer .acts{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px}
+.situation{font-family:var(--display);font-size:clamp(24px,4vw,34px);font-weight:700;line-height:1.15}
+.verdict{font-family:var(--display);font-size:26px}
+.model{font-family:var(--display);font-size:24px;color:var(--jungle)}
+dialog{border:0;border-radius:20px;padding:20px;max-width:min(520px,92vw);background:var(--panel);color:var(--ink);box-shadow:0 20px 60px rgba(0,0,0,.35)}
+dialog::backdrop{background:rgba(10,20,25,.55)}
+dialog h2{color:var(--rose)}
+#toast{position:fixed;left:50%;bottom:calc(18px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);max-width:min(560px,92vw);margin:0;z-index:20;box-shadow:0 8px 30px rgba(0,0,0,.25);background:var(--panel);border-radius:12px;padding:8px 14px}
+#toast:empty{display:none}
+textarea{width:100%;min-height:160px;font-family:var(--mono);font-size:12px;border:1.5px solid var(--line);border-radius:10px;padding:8px;background:var(--bg);color:inherit}
 /* phone layout */
 .wrap{padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-bottom:calc(48px + env(safe-area-inset-bottom,0px))}
 @media (max-width:640px){
@@ -91,32 +122,38 @@ body.dict-mode .practise{display:none}
   .btns .btn.mic{flex:1 1 100%;font-size:20px;padding:16px}
   .card{padding:14px 14px}
   .list{max-height:42vh}
+  .tab{padding:9px 12px;font-size:15px}
 }
 </style>
 </head>
-<body>
+<body data-tab="practise">
 <div class="wrap">
   <div class="picado" id="picado" aria-hidden="true"></div>
   <header>
     <div class="muted" style="font-family:var(--mono);font-size:12px;letter-spacing:.12em;text-transform:uppercase">Español mexicano · voice practice</div>
     <h1>Sofía <span>Voice Coach</span></h1>
-    <p class="muted" style="margin:4px 0 0">Pick a phrase, press 🎤 and say it. Sofía checks every word with a Mexican-Spanish ear, breaks the hard words into syllables and says it back to you.</p>
+    <p class="muted" style="margin:4px 0 0">Pick a phrase, press 🎤 and say it. Sofía checks every word with a Mexican-Spanish ear, keeps your scores, and tells you what to work on next.</p>
   </header>
   <div class="warn" id="warn" hidden></div>
+
+  <div class="card review" id="review" hidden></div>
+
   <div class="tabs" role="tablist">
-    <button class="tab" role="tab" id="tab-practise" aria-selected="true" type="button">🎤 Practise</button>
-    <button class="tab" role="tab" id="tab-dict" aria-selected="false" type="button">📖 Dictionary</button>
+    <button class="tab" role="tab" data-tab="practise" aria-selected="true" type="button">🎤 Practise</button>
+    <button class="tab" role="tab" data-tab="local" aria-selected="false" type="button">🇲🇽 Say it local</button>
+    <button class="tab" role="tab" data-tab="progress" aria-selected="false" type="button">📈 Progress</button>
+    <button class="tab" role="tab" data-tab="dict" aria-selected="false" type="button">📖 Dictionary</button>
     <span class="offline-badge" id="offline-badge"></span>
   </div>
 
-  <div class="card dict" id="dict-card">
+  <div class="card" data-panel="dict" id="dict-card">
     <input type="search" id="dict-q" placeholder="Search English or Spanish… e.g. bathroom, cuánto, bus" autocomplete="off" aria-label="Search the dictionary">
     <div class="chips" id="dict-cats"></div>
     <div class="dict-count muted" id="dict-count"></div>
     <div class="dict-list" id="dict-list"></div>
   </div>
 
-  <div class="card practise">
+  <div class="card" data-panel="practise">
     <div class="bar">
       <label>Your name<input type="text" id="who" placeholder="Your first name" maxlength="20" autocomplete="given-name"></label>
       <label>Lesson<select id="night"></select></label>
@@ -126,7 +163,7 @@ body.dict-mode .practise{display:none}
     <div class="list" id="list" style="margin-top:12px"></div>
   </div>
 
-  <div class="card practise">
+  <div class="card" data-panel="practise">
     <div class="muted" id="en"></div>
     <div class="target" id="target">Tap a phrase in the list above</div>
     <div class="syl" id="syl"></div>
@@ -139,13 +176,51 @@ body.dict-mode .practise{display:none}
     <div class="result" id="result"></div>
   </div>
 
-  <div class="card practise">
-    <h2 style="font-size:24px">Tonight's attempts</h2>
+  <div class="card" data-panel="practise">
+    <h2>Today's tries</h2>
     <div class="history" id="history"><span class="muted">Nothing yet.</span></div>
   </div>
+
+  <div class="card" data-panel="local">
+    <div class="muted" style="font-family:var(--mono);font-size:12px;letter-spacing:.1em;text-transform:uppercase" id="local-count"></div>
+    <div class="situation" id="local-q"></div>
+    <div class="muted" id="local-hint" style="margin-top:4px"></div>
+    <div class="btns">
+      <button class="btn mic" id="local-mic" type="button">🎤 Say it</button>
+      <button class="btn ghost" id="local-show" type="button">💡 Show me</button>
+      <button class="btn ghost" id="local-next" type="button">⏭ Next</button>
+    </div>
+    <div class="say-status" id="local-status" role="status" aria-live="polite"></div>
+    <div class="result" id="local-result"></div>
+  </div>
+  <div class="card" data-panel="local">
+    <p class="muted" style="margin:0;font-size:14px">This builds your <b>Dialect</b> score. Each card is a real moment; answer the way someone in Mexico would. Local words score 100, words that are understood but not Mexican score 75, textbook or Spain Spanish scores 50, and words to avoid score 0.</p>
+  </div>
+
+  <div class="card" data-panel="progress" id="progress"></div>
+
   <p class="version" id="ver"></p>
-  <p class="muted" style="font-size:13px">Voice: <span id="voice-name">loading…</span>. The dictionary, lessons and 🔊 work with no signal once the app has been opened online (🔊 needs a Spanish voice on the phone). 🎤 checking uses your phone's speech recognition, which normally needs data. It checks whether a Mexican-Spanish ear understood each word, not fine accent detail. To install: Chrome menu ⋮ → <b>Add to Home screen</b> / <b>Install app</b>.</p>
+  <p class="muted" style="font-size:13px">Voice: <span id="voice-name">loading…</span>. The dictionary, lessons, scores and 🔊 work with no signal once the app has been opened online (🔊 needs a Spanish voice on the phone). 🎤 checking uses your phone's speech recognition, which normally needs data. Your scores are saved on this phone only. To install: Chrome menu ⋮ → <b>Add to Home screen</b> / <b>Install app</b>.</p>
 </div>
+
+<div class="say-status" id="toast" role="status" aria-live="polite"></div>
+<dialog id="strike">
+  <h2>Two misses in a row</h2>
+  <div id="strike-body"></div>
+  <div class="btns">
+    <button class="btn" id="strike-drill" type="button">🐢 Slow drill</button>
+    <button class="btn ghost" id="strike-close" type="button">Try again</button>
+  </div>
+</dialog>
+<dialog id="share-box">
+  <h2 style="color:var(--sea)">Share with Sofía</h2>
+  <p class="muted" style="margin:6px 0">Copy this and paste it into your chat with Sofía (Claude). She'll read every try and tell you what to work on.</p>
+  <textarea id="share-text" readonly></textarea>
+  <div class="btns">
+    <button class="btn" id="share-copy" type="button">📋 Copy</button>
+    <button class="btn ghost" id="share-close" type="button">Close</button>
+  </div>
+</dialog>
 
 <script src="lessons.js"></script>
 <script src="dictionary.js"></script>
@@ -154,6 +229,9 @@ const $ = s => document.querySelector(s);
 for (let i=0;i<36;i++) $("#picado").append(document.createElement("i"));
 const LESSONS = (window.SOFIA_LESSONS || []).slice().sort((a,b)=>a.n-b.n);
 const START = window.SOFIA_START || "2026-11-01";
+function el(tag, cls, text){ const e = document.createElement(tag); if (cls) e.className = cls; if (text != null) e.textContent = text; return e; }
+function button(label, fn, cls="btn small"){ const b = el("button", cls, label); b.type = "button"; b.onclick = fn; return b; }
+const avg = xs => xs.length ? xs.reduce((a,b)=>a+b,0)/xs.length : 0;
 
 /* ---------- Spanish syllables + stress ---------- */
 const STRONG = "aeoáéóíú", WEAK = "iuü", VOW = STRONG + WEAK;
@@ -206,7 +284,7 @@ const ONES = ["cero","uno","dos","tres","cuatro","cinco","seis","siete","ocho","
 const TENS = {3:"treinta",4:"cuarenta",5:"cincuenta",6:"sesenta",7:"setenta",8:"ochenta",9:"noventa"};
 const HUND = {1:"ciento",2:"doscientos",3:"trescientos",4:"cuatrocientos",5:"quinientos",6:"seiscientos",7:"setecientos",8:"ochocientos",9:"novecientos"};
 function numWords(n){ if (n<30) return ONES[n]; if (n<100) return TENS[Math.floor(n/10)] + (n%10 ? " y "+ONES[n%10] : ""); if (n===100) return "cien"; if (n<1000) return HUND[Math.floor(n/100)] + (n%100 ? " "+numWords(n%100) : ""); if (n===1000) return "mil"; return String(n); }
-const norm = s => s.toLowerCase().replace(/\d+/g, d => numWords(parseInt(d,10))).normalize("NFD").replace(/[̀-ͯ]/g,"").replace(/[¿?¡!.,;:"()\-]/g," ").split(/\s+/).filter(Boolean);
+const norm = s => s.toLowerCase().replace(/\d+/g, d => numWords(parseInt(d,10))).normalize("NFD").replace(/[\u0300-\u036f]/g,"").replace(/[¿?¡!.,;:"()\-]/g," ").split(/\s+/).filter(Boolean);
 function align(target, heard){
   const T = norm(target), H = norm(heard), m = T.length, n = H.length;
   const dp = Array.from({length:m+1},()=>Array(n+1).fill(0));
@@ -216,54 +294,326 @@ function align(target, heard){
   return {ok, score: m ? Math.round(100*ok.filter(Boolean).length/m) : 0};
 }
 const shownWords = t => t.split(/\s+/).filter(w=>w.replace(/[¿?¡!.,;:"()]/g,""));
+const bare = w => w.toLowerCase().replace(/[¿?¡!.,;:"()]/g,"");
 
-/* ---------- tips for the sounds people miss ---------- */
+/* ---------- the sounds people miss: tips, drill words, and the sound scorecard ---------- */
+const V = "[aeiouáéíóú]";
+const SOUNDS = [
+  {k:"rr", label:"rolled rr", test:w=>/rr|^r/.test(w), tip:"Roll it: tongue flutters behind your top teeth. Practise \"perro\" and \"carro\".", drill:["perro","carro","arroz","rojo"]},
+  {k:"r", label:"tapped r", test:w=>!/rr|^r/.test(w) && new RegExp(V+"r"+V).test(w), tip:"One quick tap, like the tt in \"butter\": pe-ro, ca-ro.", drill:["pero","caro","para","hora"]},
+  {k:"j", label:"j / ge / gi", test:w=>/j|g[eéií]/.test(w), tip:"A soft h from the back of the throat: jugo = HOO-goh, gente = HEN-teh.", drill:["jugo","gente","ojo","jamón"]},
+  {k:"ll", label:"ll / y", test:w=>new RegExp("ll|y"+V).test(w), tip:"In Mexico both sound like the y in \"yes\": llamo = YAH-moh.", drill:["llamo","calle","pollo","playa"]},
+  {k:"h", label:"silent h", test:w=>new RegExp("^h|"+V+"h").test(w), tip:"Always silent: hola = OH-lah, hijo = EE-hoh.", drill:["hola","hijo","hay","ahora"]},
+  {k:"ñ", label:"ñ", test:w=>/ñ/.test(w), tip:"ny, like canyon: año = AH-nyoh, baño = BAH-nyoh.", drill:["año","baño","niño","mañana"]},
+  {k:"v", label:"v (soft b)", test:w=>/v/.test(w), tip:"Sounds like a soft b: vamos = BAH-mohs.", drill:["vamos","vaso","nueve","vino"]},
+  {k:"z", label:"z / ce / ci", test:w=>/z|c[eéií]/.test(w), tip:"In Mexico these are plain s, no lisp: cinco = SEEN-koh, diez = dee-EHS.", drill:["cinco","diez","cerveza","gracias"]},
+  {k:"qu", label:"qu", test:w=>/qu/.test(w), tip:"Just a k: ¿qué? = KEH, quince = KEEN-seh.", drill:["qué","quiero","quince","aquí"]},
+  {k:"d", label:"soft d", test:w=>new RegExp(V+"d"+V).test(w), tip:"Between vowels it's soft, almost the th in \"the\": nada = NAH-tha.", drill:["nada","todo","cuidado","helado"]},
+];
+const VOWEL_TIP = ["vowels","Short and pure, never sliding: a = ah, e = eh, i = ee, o = oh, u = oo."];
 function tipsFor(words){
-  const t = new Set(), w = words.join(" ").toLowerCase();
-  if (/rr|(^|\s)r/.test(w)) t.add(["rr","Roll it: tongue flutters behind your top teeth. Practise \"perro\" and \"carro\"."]);
-  else if (/[aeiou]r[aeiou]/.test(w)) t.add(["r","One quick tap, like the tt in \"butter\": pe-ro, ca-ro."]);
-  if (/j|g[eéií]/.test(w)) t.add(["j / ge","A soft h from the back of the throat: jugo = HOO-goh, gente = HEN-teh."]);
-  if (/ll|y/.test(w)) t.add(["ll / y","In Mexico both sound like the y in \"yes\": llamo = YAH-moh."]);
-  if (/(^|\s)h|[aeiou]h/.test(w)) t.add(["h","Always silent: hola = OH-lah, hijo = EE-hoh."]);
-  if (/ñ/.test(w)) t.add(["ñ","ny, like canyon: año = AH-nyoh, baño = BAH-nyoh."]);
-  if (/v/.test(w)) t.add(["v","Sounds like a soft b: vamos = BAH-mohs."]);
-  if (/z|c[eéií]/.test(w)) t.add(["z / ce / ci","In Mexico these are plain s, no lisp: cinco = SEEN-koh, diez = dee-EHS."]);
-  if (/qu/.test(w)) t.add(["qu","Just a k: ¿qué? = KEH, quince = KEEN-seh."]);
-  if (/[aeiou]d[aeiou]/.test(w)) t.add(["d","Between vowels it's soft, almost the th in \"the\": nada = NAH-tha."]);
-  t.add(["vowels","Short and pure, never sliding: a = ah, e = eh, i = ee, o = oh, u = oo."]);
-  return [...t].slice(0,3);
+  const t = [];
+  for (const S of SOUNDS) if (words.some(w=>S.test(bare(w)))) t.push([S.label, S.tip]);
+  t.push(VOWEL_TIP);
+  return t.slice(0,3);
 }
 
 /* ---------- voice out ---------- */
-const APP_VERSION = "2026-11-01d";
+const APP_VERSION = "2026-11-02a";
 /* every button answers right where you tapped: no silent failures */
-function note(msg, kind=""){ const s = $("#say-status"); if (!s) return; s.textContent = msg; s.className = "say-status" + (kind ? " "+kind : ""); }
+let toastTimer = null;
+function note(msg, kind="", where="#say-status"){ const s = $(where); if (!s) return; s.textContent = msg; s.className = "say-status" + (kind ? " "+kind : ""); if (where==="#toast") { clearTimeout(toastTimer); toastTimer = setTimeout(()=>{ s.textContent = ""; }, kind==="bad" ? 7000 : 3500); } }
+let speakWhere = "#say-status";   // the status line of the tab you're on
 const HAS_TTS = "speechSynthesis" in window && "SpeechSynthesisUtterance" in window;
 let VOICE = null;
 function pickVoice(){ if (!HAS_TTS) { $("#voice-name").textContent = "this browser can't speak"; return; } const vs = speechSynthesis.getVoices(); VOICE = vs.find(v=>/es[-_]MX/i.test(v.lang)) || vs.find(v=>/es[-_](US|419)/i.test(v.lang)) || vs.find(v=>/^es/i.test(v.lang)) || null; $("#voice-name").textContent = VOICE ? `${VOICE.name} (${VOICE.lang})` : (vs.length ? "no Spanish voice found on this phone (see Settings → Text-to-speech → Install voice data → Español)" : "phone default voice"); }
 if (HAS_TTS) { speechSynthesis.onvoiceschanged = pickVoice; pickVoice(); }
 function speak(text, rate=0.9){
+  const say = (m,k) => note(m, k, speakWhere);
   return new Promise(res => {
-    if (!HAS_TTS) { note("This browser can't read aloud. Open Sofía in Chrome.", "bad"); return res(); }
+    if (!HAS_TTS) { say("This browser can't read aloud. Open Sofía in Chrome.", "bad"); return res(); }
     try { speechSynthesis.cancel(); speechSynthesis.resume(); } catch(_){}
     let u;
     try { u = new SpeechSynthesisUtterance(text); u.lang = VOICE?.lang || "es-MX"; u.rate = rate; }
-    catch (err) { note("Couldn't prepare the voice (" + (err.message||err) + ").", "bad"); return res(); }
+    catch (err) { say("Couldn't prepare the voice (" + (err.message||err) + ").", "bad"); return res(); }
     try { if (VOICE) u.voice = VOICE; } catch(_) { /* odd voice object: fall back to the phone's default Spanish */ }
     let started = false;
-    u.onstart = () => { started = true; note("🔊 " + (rate < 0.7 ? "Slowly: " : "") + text, "ok"); };
+    u.onstart = () => { started = true; say("🔊 " + (rate < 0.7 ? "Slowly: " : "") + text, "ok"); };
     u.onend = () => res();
-    u.onerror = e => { if (e.error !== "interrupted" && e.error !== "canceled") note(`Couldn't play the voice (${e.error}). Check the volume and that the phone isn't on silent.`, "bad"); res(); };
-    try { speechSynthesis.speak(u); } catch (err) { note("Couldn't play the voice (" + (err.message||err) + ").", "bad"); return res(); }
-    setTimeout(() => { if (!started && !speechSynthesis.speaking) { note("Your phone didn't play anything. Turn the volume up (media volume), and check Settings → Text-to-speech → Install voice data → Español.", "bad"); res(); } }, 3000);
+    u.onerror = e => { if (e.error !== "interrupted" && e.error !== "canceled") say(`Couldn't play the voice (${e.error}). Check the volume and that the phone isn't on silent.`, "bad"); res(); };
+    try { speechSynthesis.speak(u); } catch (err) { say("Couldn't play the voice (" + (err.message||err) + ").", "bad"); return res(); }
+    setTimeout(() => { if (!started && !speechSynthesis.speaking) { say("Your phone didn't play anything. Turn the volume up (media volume), and check Settings → Text-to-speech → Install voice data → Español.", "bad"); res(); } }, 3000);
   });
 }
 
-/* ---------- picking phrases ---------- */
-let current = null;
+/* ---------- tabs ---------- */
+let tabNow = "practise";
+function setTab(name){
+  tabNow = name; document.body.dataset.tab = name;
+  document.querySelectorAll(".tab").forEach(t => t.setAttribute("aria-selected", t.dataset.tab===name));
+  speakWhere = name==="local" ? "#local-status" : name==="practise" ? "#say-status" : "#toast";   // Progress and Dictionary use the pop-up line
+  if (name==="dict") renderDict();
+  if (name==="progress") renderProgress();
+  if (name==="local" && !localItem) nextLocal();
+  try { localStorage.setItem("sofia-tab", name); } catch(_){}
+}
+document.querySelectorAll(".tab").forEach(t => t.onclick = () => setTab(t.dataset.tab));
+
+/* ---------- who's practising (each person keeps their own scores) ---------- */
 const who = $("#who");
 try { who.value = localStorage.getItem("sofia-who") || ""; } catch(_){}
-who.onchange = () => { try { localStorage.setItem("sofia-who", who.value.trim()); } catch(_){} };
+who.onchange = () => { try { localStorage.setItem("sofia-who", who.value.trim()); } catch(_){} renderToday(); if (tabNow==="progress") renderProgress(); $("#review").hidden = true; maybeReview(true); };
+
+/* ---------- progress: every try is kept on this phone, per person ---------- */
+const PKEY = "sofia-progress-v1";
+let PROG = {people:{}};
+try { const raw = localStorage.getItem(PKEY); if (raw) PROG = JSON.parse(raw); } catch(_){}
+if (!PROG || typeof PROG !== "object" || !PROG.people) PROG = {people:{}};
+function saveProg(){ try { localStorage.setItem(PKEY, JSON.stringify(PROG)); return true; } catch(_){ note("Couldn't save your score on this phone (storage is full or blocked).", "bad", speakWhere); return false; } }
+const personName = () => who.value.trim() || "Me";
+function me(){ const k = personName().toLowerCase(); const p = PROG.people[k] ||= {name: personName(), attempts: [], needs: {}, lastReview: null, lastSeen: null}; p.name = personName(); return p; }
+const peek = () => PROG.people[personName().toLowerCase()] || null;
+const DAY = 86400000;
+const dateOnly = iso => new Date(iso).toLocaleDateString(undefined, {weekday:"short", month:"short", day:"numeric"});
+
+function recordAttempt(a){
+  const p = me(); a.t = new Date().toISOString();
+  p.attempts.push(a); if (p.attempts.length > 2000) p.attempts.splice(0, p.attempts.length - 2000);
+  p.lastSeen = a.t;
+  checkStrikes(p, a);
+  saveProg(); renderToday();
+}
+
+/* two tries in a row at 25% or less on the same phrase = alert + Needs Work list. 75%+ later clears it. */
+function streakLow(p, a){ let n = 0; const same = p.attempts.filter(x => x.kind===a.kind && x.es===a.es); for (let i=same.length-1; i>=0 && same[i].score<=25; i--) n++; return n; }
+function checkStrikes(p, a){
+  const flag = p.needs[a.es];
+  const streak = streakLow(p, a);
+  if (streak >= 2) {
+    if (!flag || flag.cleared) p.needs[a.es] = {since: a.t, en: a.en || "", kind: a.kind, alerts: 0};
+    if (streak % 2 === 0) { p.needs[a.es].alerts++; strikeAlert(p, a); }
+  } else if (flag && !flag.cleared && a.score >= 75) {
+    flag.cleared = a.t;
+    setTimeout(() => note("✓ Cleared from Needs Work: " + a.es, "ok", speakWhere), 50);
+  }
+}
+let strikeFor = null;
+function strikeAlert(p, a){
+  strikeFor = a;
+  const same = p.attempts.filter(x => x.kind===a.kind && x.es===a.es).slice(-2);
+  const body = $("#strike-body"); body.replaceChildren();
+  body.append(el("div", "target", a.es));
+  if (a.en) body.append(el("div", "muted", a.en));
+  body.append(el("p", "", `You scored ${same.map(x=>x.score+"%").join(" and ")}. It's now on your Needs Work list.`));
+  if (a.kind === "say") {
+    const missed = shownWords(a.es).filter((_,i)=>a.ok && a.ok[i]==="0");
+    if (missed.length) {
+      const b = el("div", "break"); b.append(el("div", "muted", "The trouble words, slowed down:"));
+      for (const w of missed) { const bd = breakdown(w); if (!bd) continue; const x = button("", () => speak(bare(w), 0.5), ""); x.innerHTML = bd.syl.map((s,i)=> i===bd.st ? "<b>"+s.toUpperCase()+"</b>" : s).join("-"); b.append(x); }
+      body.append(b);
+    }
+    const tips = el("div", "tips"); for (const [k,v] of tipsFor(missed.length ? missed : shownWords(a.es))) { const t = el("div", "tip"); t.append(el("b", "", k), v); tips.append(t); }
+    body.append(tips);
+  } else {
+    body.append(el("p", "model", "Say: " + a.model));
+    if (a.tip) body.append(el("div", "tip", a.tip));
+  }
+  const d = $("#strike"); try { d.open || d.showModal(); } catch(_) { d.setAttribute("open", ""); }
+  phoneAlert("Sofía: two misses in a row", `${a.es}: ${same.map(x=>x.score+"%").join(", ")}. Tap to practise it slowly.`);
+}
+$("#strike-close").onclick = () => $("#strike").close();
+$("#strike-drill").onclick = async () => {
+  const a = strikeFor; if (!a) return;
+  $("#strike").close();
+  if (a.kind === "say") { practiseThis(a.es, a.en); for (const w of shownWords(a.es)) await speak(bare(w), 0.5); await speak(a.es, 0.6); note("Now you: tap 🎤 and say it slowly, word by word.", "ok"); }
+  else { setTab("local"); await speak(a.model, 0.55); await speak(a.model, 0.8); note("Now you: tap 🎤 and say it like that.", "ok", "#local-status"); }
+};
+
+/* phone notification (only if you turned alerts on in Progress), plus a buzz */
+async function phoneAlert(title, body){
+  try { navigator.vibrate && navigator.vibrate([120,60,120]); } catch(_){}
+  if (!("Notification" in window) || Notification.permission !== "granted") return false;
+  try {
+    const reg = navigator.serviceWorker && await navigator.serviceWorker.getRegistration();
+    if (reg) { await reg.showNotification(title, {body, icon:"icon-192.png", badge:"icon-192.png", tag:"sofia-strike"}); return true; }
+    new Notification(title, {body, icon:"icon-192.png"}); return true;
+  } catch(_) { return false; }
+}
+
+/* ---------- scores ---------- */
+const sayList = p => p.attempts.filter(a=>a.kind==="say");
+const localList = p => p.attempts.filter(a=>a.kind==="local");
+function accentScore(list){
+  if (list.length < 5) return null;
+  const recent = list.slice(-40), words = avg(recent.map(a=>a.score));
+  const confs = recent.filter(a=>a.conf>0).map(a=>a.conf*100);
+  return Math.round(confs.length >= 5 ? words*0.7 + avg(confs)*0.3 : words);
+}
+function dialectScore(list){ return list.length < 3 ? null : Math.round(avg(list.slice(-30).map(a=>a.score))); }
+const inWindow = (list, from, to) => list.filter(a => { const t = Date.parse(a.t); return t >= from && t < to; });
+function trend(fn, list){ const now = Date.now(); const a = fn(inWindow(list, now-7*DAY, now+1)), b = fn(inWindow(list, now-14*DAY, now-7*DAY)); return (a==null || b==null) ? null : a-b; }
+const band = s => s==null ? "" : s>=90 ? "Like a local" : s>=80 ? "Very good" : s>=60 ? "Good" : s>=40 ? "Getting there" : "Starting out";
+function soundStats(list){
+  const s = {};
+  for (const a of list.slice(-200)) { if (!a.ok) continue; shownWords(a.es).forEach((w,i) => { const b = bare(w); for (const S of SOUNDS) if (S.test(b)) { const o = s[S.k] ||= {hit:0, n:0}; o.n++; if (a.ok[i]==="1") o.hit++; } }); }
+  return s;
+}
+function phraseStats(list){
+  const m = new Map();
+  for (const a of list) { const o = m.get(a.es) || {es:a.es, en:a.en, kind:a.kind, scores:[], missed:{}, last:a.t, model:a.model, tip:a.tip}; o.scores.push(a.score); o.last = a.t; if (a.ok) shownWords(a.es).forEach((w,i)=>{ if (a.ok[i]==="0") o.missed[bare(w)] = (o.missed[bare(w)]||0)+1; }); m.set(a.es, o); }
+  for (const o of m.values()) { o.recent = Math.round(avg(o.scores.slice(-3))); o.best = Math.max(...o.scores); o.trouble = Object.entries(o.missed).sort((x,y)=>y[1]-x[1] || y[0].length-x[0].length)[0]?.[0] || null; }
+  return [...m.values()];
+}
+function workOn(p, n=3){
+  const open = Object.keys(p.needs).filter(k => !p.needs[k].cleared);
+  return phraseStats(p.attempts).filter(o => o.recent < 75).sort((a,b) => (open.includes(b.es)-open.includes(a.es)) || a.recent-b.recent).slice(0,n);
+}
+function weakSounds(p, n=2){
+  const s = soundStats(sayList(p));
+  return SOUNDS.map(S => ({S, ...(s[S.k]||{hit:0,n:0})})).filter(x => x.n >= 3 && x.hit/x.n < 0.8).sort((a,b) => a.hit/a.n - b.hit/b.n).slice(0,n);
+}
+function meter(pct){ const m = el("div", "meter " + (pct<50?"lo":pct<80?"mid":"hi")); const i = el("i"); i.style.width = Math.max(3,pct) + "%"; m.append(i); return m; }
+function tile(k, v, s){ const t = el("div", "tile"); t.append(el("div","k",k)); const vv = el("div","v", v); t.append(vv); if (s) t.append(s instanceof Node ? s : el("div","s",s)); return t; }
+function trendLine(d, extra){ const s = el("div", "s"); if (d!=null && d!==0) s.append(el("span", d>0?"up":"down", (d>0?"▲ ":"▼ ")+Math.abs(d)+" this week · ")); s.append(extra || ""); return s; }
+
+/* ---------- pointers: what to work on next (used by the review card and Progress) ---------- */
+function practiseThis(es, en){ setTab("practise"); document.querySelectorAll(".item.sel").forEach(x=>x.classList.remove("sel")); choose({es, en: en || ""}); document.querySelector(".target").scrollIntoView({behavior:"smooth", block:"center"}); }
+function pointers(p){
+  const out = [];
+  for (const o of workOn(p)) {
+    const d = el("div", "pointer");
+    const flagged = p.needs[o.es] && !p.needs[o.es].cleared;
+    d.append(el("b", "", (flagged ? "⚠ " : "") + o.es));
+    let why = `Last tries average ${o.recent}% (${o.scores.length} ${o.scores.length===1?"try":"tries"}, best ${o.best}%).`;
+    if (o.kind==="say" && o.trouble) { const bd = breakdown(o.trouble); why += ` The word that trips you up: ${o.trouble}${bd ? " (" + bd.text + ")" : ""}.`; const S = SOUNDS.find(S=>S.test(o.trouble)); if (S) why += " " + S.tip; }
+    if (o.kind==="local") why += ` Say it like a local: “${o.model}”.` + (o.tip ? " " + o.tip : "");
+    d.append(el("div", "", why));
+    const acts = el("div", "acts");
+    if (o.kind==="say") { acts.append(button("🎤 Practise", () => practiseThis(o.es, o.en))); if (o.trouble) acts.append(button("🐢 " + o.trouble, () => speak(o.trouble, 0.5), "btn small ghost")); }
+    else acts.append(button("🔊 Hear it", () => speak(o.model, 0.75)), button("🇲🇽 Drill it", () => { setTab("local"); showLocal(LOCAL.find(x=>x.q===o.es)); }, "btn small ghost"));
+    d.append(acts); out.push(d);
+  }
+  for (const w of weakSounds(p)) {
+    const d = el("div", "pointer");
+    d.append(el("b", "", `Sound: ${w.S.label} · ${Math.round(100*w.hit/w.n)}% (${w.hit} of ${w.n} words)`));
+    d.append(el("div", "", w.S.tip));
+    const acts = el("div", "acts"); for (const word of w.S.drill) acts.append(button("🎤 " + word, () => practiseThis(word, "Sound drill: " + w.S.label), "btn small ghost"));
+    d.append(acts); out.push(d);
+  }
+  return out;
+}
+
+/* ---------- "since last time": shown when you come back after 20+ minutes away ---------- */
+function maybeReview(force){
+  const p = peek(); if (!p || !p.attempts.length) return;
+  const gap = Date.now() - (p.lastSeen ? Date.parse(p.lastSeen) : 0);
+  if (force || gap > 20*60*1000) showReview(p);
+  p.lastSeen = new Date().toISOString(); saveProg();
+}
+function showReview(p){
+  const box = $("#review"); box.replaceChildren();
+  const since = p.lastReview ? p.attempts.filter(a => Date.parse(a.t) > Date.parse(p.lastReview)) : p.attempts;
+  box.append(el("h2", "", `¡Hola${p.name && p.name!=="Me" ? ", " + p.name : ""}! Since last time`));
+  const ss = since.filter(a=>a.kind==="say"), sl = since.filter(a=>a.kind==="local");
+  const summary = since.length
+    ? `${since.length} ${since.length===1?"try":"tries"} since ${p.lastReview ? dateOnly(p.lastReview) : "you started"}` + (ss.length ? ` · pronunciation average ${Math.round(avg(ss.map(a=>a.score)))}%` : "") + (sl.length ? ` · local-Spanish average ${Math.round(avg(sl.map(a=>a.score)))}%` : "") + "."
+    : "No new tries since your last review. Here's where you stand.";
+  box.append(el("p", "muted", summary));
+  const acc = accentScore(sayList(p)), dia = dialectScore(localList(p));
+  const tiles = el("div", "tiles");
+  tiles.append(tile("Accent", acc==null ? "—" : acc, trendLine(trend(accentScore, sayList(p)), acc==null ? "5 tries to unlock" : band(acc))));
+  tiles.append(tile("Dialect", dia==null ? "—" : dia, trendLine(trend(dialectScore, localList(p)), dia==null ? "3 local cards to unlock" : band(dia))));
+  box.append(tiles);
+  const best = phraseStats(since).filter(o=>o.best===100).slice(-3);
+  if (best.length) box.append(el("p", "", "Nailed it: " + best.map(o=>o.es).join(" · ") + " 🎉"));
+  const ps = pointers(p);
+  box.append(el("h3", "", ps.length ? "Work on these next" : "Nothing below 75% right now. Try a new lesson or a round of 🇲🇽 Say it local."));
+  box.append(...ps);
+  const acts = el("div", "btns");
+  acts.append(button("Got it ✓", () => { p.lastReview = new Date().toISOString(); saveProg(); box.hidden = true; }));
+  acts.append(button("📤 Share with Sofía", openShare, "btn ghost"));
+  box.append(acts);
+  box.hidden = false;
+}
+
+/* ---------- Progress tab ---------- */
+function renderProgress(){
+  const box = $("#progress"); box.replaceChildren();
+  const p = peek();
+  box.append(el("h2", "", "Progress: " + personName()));
+  const names = Object.values(PROG.people).map(x=>x.name);
+  if (names.length > 1) { const c = el("div", "chips"); for (const n of names) { const b = button(n, () => { who.value = n === "Me" ? "" : n; who.onchange(); }, ""); b.setAttribute("aria-pressed", n.toLowerCase()===personName().toLowerCase()); c.append(b); } box.append(c); }
+  if (!p || !p.attempts.length) { box.append(el("p", "muted", "No tries yet for this name. Type your name on the 🎤 Practise tab, then say a few phrases. Every try is saved here.")); box.append(alertsButton()); return; }
+  const say = sayList(p), loc = localList(p), week = inWindow(p.attempts, Date.now()-7*DAY, Date.now()+1);
+  const acc = accentScore(say), dia = dialectScore(loc);
+  const tiles = el("div", "tiles");
+  tiles.append(tile("Accent", acc==null ? "—" : acc, trendLine(trend(accentScore, say), acc==null ? `${say.length} of 5 tries to unlock` : band(acc))));
+  tiles.append(tile("Dialect", dia==null ? "—" : dia, trendLine(trend(dialectScore, loc), dia==null ? `${loc.length} of 3 local cards to unlock` : band(dia))));
+  tiles.append(tile("Tries this week", week.length, `${p.attempts.length} all time`));
+  const ph = phraseStats(say); tiles.append(tile("Phrases at 75%+", ph.filter(o=>o.recent>=75).length, `of ${ph.length} practised`));
+  box.append(tiles);
+  box.append(el("p", "muted", "Accent = how clearly a Mexican-Spanish ear understands you: words caught on your last 40 tries, plus how sure the phone was. It's a good guide, not a sound-by-sound grade. Dialect = how local your word choices are, from the 🇲🇽 cards."));
+
+  const open = Object.entries(p.needs).filter(([,v])=>!v.cleared);
+  box.append(el("h3", "", `Needs work (${open.length})`));
+  if (!open.length) box.append(el("p", "muted", "Nothing flagged. Two tries in a row at 25% or less puts a phrase here; one try at 75%+ clears it."));
+  else { const rows = el("div", "rows"); for (const [es, v] of open) { const st = phraseStats(p.attempts.filter(a=>a.es===es))[0]; const r = el("div", "row flag"); const t = el("div", "t"); t.append(el("b", "", es), el("small", "", `Flagged ${dateOnly(v.since)} · last tries ${st ? st.scores.slice(-3).join("%, ")+"%" : ""}`)); r.append(t, v.kind==="local" ? button("🇲🇽 Drill", () => { setTab("local"); showLocal(LOCAL.find(x=>x.q===es)); }) : button("🎤 Practise", () => practiseThis(es, v.en))); rows.append(r); } box.append(rows); }
+
+  const ps = pointers(p);
+  if (ps.length) { box.append(el("h3", "", "Sofía's pointers")); box.append(...ps); }
+
+  const s = soundStats(say), sr = SOUNDS.filter(S => s[S.k]?.n);
+  box.append(el("h3", "", "Sound scorecard"));
+  if (!sr.length) box.append(el("p", "muted", "Say a few phrases to see which sounds you hit."));
+  else { const rows = el("div", "rows"); for (const S of sr.sort((a,b)=>s[a.k].hit/s[a.k].n - s[b.k].hit/s[b.k].n)) { const o = s[S.k], pct = Math.round(100*o.hit/o.n); const r = el("div", "row"); const t = el("div", "t"); t.style.flex = "1"; t.append(el("b", "", `${S.label} · ${pct}%`), el("small", "", `${o.hit} of ${o.n} words with this sound`), meter(pct)); r.append(t, button("🎤 Drill", () => practiseThis(S.drill[0], "Sound drill: " + S.label), "btn small ghost")); rows.append(r); } box.append(rows); }
+
+  box.append(el("h3", "", "Every phrase you've tried"));
+  const rows = el("div", "rows");
+  for (const o of phraseStats(p.attempts).sort((a,b)=>a.recent-b.recent)) { const r = el("div", "row"); const t = el("div", "t"); t.style.flex = "1"; t.append(el("b", "", (o.kind==="local" ? "🇲🇽 " : "") + o.es), el("small", "", `${o.scores.length} ${o.scores.length===1?"try":"tries"} · last ${o.scores.slice(-5).join("%, ")}% · best ${o.best}%`), meter(o.recent)); r.append(t); rows.append(r); }
+  box.append(rows);
+
+  const acts = el("div", "btns");
+  acts.append(button("📋 Review now", () => { showReview(p); $("#review").scrollIntoView({behavior:"smooth"}); }), button("📤 Share with Sofía", openShare, "btn ghost"), alertsButton());
+  acts.append(button("🗑 Clear my history", () => { if (confirm(`Delete all ${p.attempts.length} saved tries for ${p.name} on this phone? This can't be undone.`)) { delete PROG.people[p.name.toLowerCase()]; saveProg(); renderProgress(); renderToday(); $("#review").hidden = true; } }, "btn ghost"));
+  box.append(acts);
+}
+function alertsButton(){
+  const has = "Notification" in window, st = has ? Notification.permission : "unsupported";
+  const b = button(st==="granted" ? "🔔 Phone alerts on" : "🔔 Turn on phone alerts", async () => {
+    if (!has) { alert("This browser can't show phone notifications. You'll still get the pop-up inside Sofía."); return; }
+    if (Notification.permission === "denied") { alert("Notifications are blocked for Sofía. Turn them on in Chrome: ⋮ → Settings → Notifications (or long-press the app icon → App info → Notifications)."); return; }
+    const r = await Notification.requestPermission();
+    if (r === "granted") phoneAlert("Sofía alerts are on", "You'll get a buzz when a phrase misses twice in a row.");
+    renderProgress();
+  }, "btn ghost");
+  return b;
+}
+
+/* ---------- share with Sofía (no key needed: you paste it into the chat) ---------- */
+function shareText(p){
+  const say = sayList(p), loc = localList(p), acc = accentScore(say), dia = dialectScore(loc);
+  const L = [`SOFÍA PROGRESS · ${p.name} · ${new Date().toLocaleString()} · app ${APP_VERSION}`,
+    `Accent ${acc ?? "n/a"} · Dialect ${dia ?? "n/a"} · ${p.attempts.length} tries (${say.length} pronunciation, ${loc.length} local)`];
+  const open = Object.entries(p.needs).filter(([,v])=>!v.cleared).map(([k])=>k);
+  L.push("Needs work: " + (open.join(" | ") || "none"));
+  const s = soundStats(say); L.push("Sounds: " + SOUNDS.filter(S=>s[S.k]?.n).map(S=>`${S.k} ${s[S.k].hit}/${s[S.k].n}`).join(", "));
+  L.push("Phrases (tries · last scores · trouble word):");
+  for (const o of phraseStats(p.attempts).sort((a,b)=>a.recent-b.recent)) L.push(`- ${o.kind==="local"?"[local] ":""}${o.es} · ${o.scores.length} · ${o.scores.slice(-6).join("/")}${o.trouble ? " · " + o.trouble : ""}`);
+  L.push("Last 40 tries (time · score · heard):");
+  for (const a of p.attempts.slice(-40)) L.push(`- ${a.t.slice(5,16).replace("T"," ")} · ${a.score}% · ${a.es} → "${a.heard||""}"`);
+  return L.join("\n");
+}
+async function openShare(){
+  const p = peek(); if (!p) return;
+  const text = shareText(p);
+  if (navigator.share) { try { await navigator.share({title: "Sofía progress", text}); return; } catch(e) { if (e.name === "AbortError") return; } }
+  $("#share-text").value = text; const d = $("#share-box"); try { d.showModal(); } catch(_) { d.setAttribute("open",""); }
+}
+$("#share-copy").onclick = async () => { const t = $("#share-text"); try { await navigator.clipboard.writeText(t.value); $("#share-copy").textContent = "✓ Copied"; } catch(_) { t.select(); document.execCommand && document.execCommand("copy"); $("#share-copy").textContent = "✓ Copied"; } setTimeout(()=>$("#share-copy").textContent = "📋 Copy", 2000); };
+$("#share-close").onclick = () => $("#share-box").close();
+
+/* ---------- picking phrases ---------- */
+let current = null;
 const tonight = Math.max(1, Math.round((new Date(new Date().toDateString()) - new Date(START+"T00:00:00"))/86400000) + 1);
 const nightSel = $("#night");
 LESSONS.forEach(L => nightSel.append(new Option(`Night ${L.n}: ${L.title}`, L.n)));
@@ -274,8 +624,9 @@ function renderList(){
   const L = LESSONS.find(x=>String(x.n)===nightSel.value), box = $("#list"); box.replaceChildren();
   if (!L) { box.textContent = "No phrases here yet."; return; }
   const items = [...(L.phrases||[]).map(p=>({es:p.es, en:p.en, say:p.say})), ...(L.dialogue||[]).map(d=>({es:d.es, en:`${d.who}: ${d.en}`}))];
+  const p = peek(), stats = p ? new Map(phraseStats(sayList(p)).map(o=>[o.es,o])) : new Map();
   let first = null;
-  for (const it of items) { const b = document.createElement("button"); b.type = "button"; b.className = "item"; b.innerHTML = "<span><b></b><br><small></small></span>"; b.querySelector("b").textContent = it.es; b.querySelector("small").textContent = it.en; b.onclick = () => { document.querySelectorAll(".item.sel").forEach(x=>x.classList.remove("sel")); b.classList.add("sel"); choose(it); }; box.append(b); first = first || b; }
+  for (const it of items) { const b = document.createElement("button"); b.type = "button"; b.className = "item"; b.innerHTML = "<span><b></b><br><small></small></span><small class='best'></small>"; b.querySelector("b").textContent = it.es; b.querySelector("small").textContent = it.en; const st = stats.get(it.es); if (st) b.querySelector(".best").textContent = (p.needs[it.es] && !p.needs[it.es].cleared ? "⚠ " : "") + "best " + st.best + "%"; b.onclick = () => { document.querySelectorAll(".item.sel").forEach(x=>x.classList.remove("sel")); b.classList.add("sel"); choose(it); }; box.append(b); first = first || b; }
   if (first) first.click();   // a phrase is always selected, so the buttons always have something to do
 }
 function choose(it){ current = it; $("#target").textContent = it.es; $("#en").textContent = it.en || ""; $("#syl").textContent = phraseBreak(it.es) + (it.say ? "   ·   say: " + it.say : ""); $("#result").replaceChildren(); note(""); }
@@ -283,38 +634,42 @@ $("#use-free").onclick = () => { const t = $("#free").value.trim(); if (t) { doc
 $("#play").onclick = () => current ? speak(current.es, 0.9) : note("Tap a phrase in the list first.", "bad");
 $("#slow").onclick = () => current ? speak(current.es, 0.55) : note("Tap a phrase in the list first.", "bad");
 
-/* ---------- mic ---------- */
+/* ---------- mic (shared by Practise and Say it local) ---------- */
 const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
 let rec = null;
-$("#mic").onclick = () => {
-  if (!SR) { note("This browser can't listen. Open Sofía in Google Chrome.", "bad"); return; }
-  if (!current) { note("Tap a phrase in the list first.", "bad"); return; }
+function listen(btn, where, onAlts){
+  const say = (m,k) => note(m, k, where), idle = btn.textContent;
+  if (!SR) { say("This browser can't listen. Open Sofía in Google Chrome.", "bad"); return; }
   if (rec) { rec.stop(); return; }
   try { if (HAS_TTS) speechSynthesis.cancel(); } catch(_){}
-  const mic = $("#mic");
   let heardSomething = false;
   try {
     rec = new SR(); rec.lang = "es-MX"; rec.interimResults = false; rec.maxAlternatives = 5;
-    rec.onstart = () => note("🎤 Listening… say it now", "ok");
-    rec.onresult = e => { heardSomething = true; const alts = [...e.results[0]].map(a=>a.transcript); let best = null; for (const h of alts) { const r = align(current.es, h); if (!best || r.score > best.r.score) best = {h, r}; } note(""); showResult(best.h, best.r); };
-    rec.onerror = e => { heardSomething = true; note(
+    rec.onstart = () => say("🎤 Listening… say it now", "ok");
+    rec.onresult = e => { heardSomething = true; const alts = [...e.results[0]].map(a=>({t:a.transcript, c:a.confidence||0})); say(""); onAlts(alts); };
+    rec.onerror = e => { heardSomething = true; say(
       e.error === "not-allowed" || e.error === "service-not-allowed" ? "Sofía needs the microphone. Tap the lock icon (or ⋮ → Site settings) → Microphone → Allow, then try again." :
       e.error === "no-speech" ? "Didn't hear anything. Tap 🎤 and start talking right away." :
       e.error === "network" ? "🎤 needs a signal or Wi-Fi to check your Spanish. 🔊 and the dictionary still work offline." :
       e.error === "audio-capture" ? "No microphone found. Check that no other app is using it." :
       "Couldn't listen (" + e.error + "). Try again.", "bad"); };
-    rec.onend = () => { rec = null; mic.classList.remove("on"); mic.textContent = "🎤 Say it"; if (!heardSomething) note("Didn't catch that. Tap 🎤 and speak a little louder.", "bad"); };
-    mic.classList.add("on"); mic.textContent = "🎤 Listening… (tap to stop)"; note("Starting the microphone…");
+    rec.onend = () => { rec = null; btn.classList.remove("on"); btn.textContent = idle; if (!heardSomething) say("Didn't catch that. Tap 🎤 and speak a little louder.", "bad"); };
+    btn.classList.add("on"); btn.textContent = "🎤 Listening… (tap to stop)"; say("Starting the microphone…");
     rec.start();
   } catch (err) {
-    rec = null; mic.classList.remove("on"); mic.textContent = "🎤 Say it";
-    note("Couldn't start the microphone (" + (err.message || err) + "). Close Sofía and open it again.", "bad");
+    rec = null; btn.classList.remove("on"); btn.textContent = idle;
+    say("Couldn't start the microphone (" + (err.message || err) + "). Close Sofía and open it again.", "bad");
   }
+}
+$("#mic").onclick = () => {
+  if (!current) { note("Tap a phrase in the list first.", "bad"); return; }
+  const target = current;
+  listen($("#mic"), "#say-status", alts => { let best = null; for (const a of alts) { const r = align(target.es, a.t); if (!best || r.score > best.r.score) best = {...a, r}; } showResult(target, best.t, best.r, best.c); });
 };
 
-async function showResult(heard, r){
+async function showResult(target, heard, r, conf){
   const box = $("#result"); box.replaceChildren();
-  const words = shownWords(current.es), missed = words.filter((_,i)=>!r.ok[i]);
+  const words = shownWords(target.es), missed = words.filter((_,i)=>!r.ok[i]);
   const line = (cls, html) => { const d = document.createElement("div"); d.className = cls; d.innerHTML = html; box.append(d); return d; };
   const praise = r.score===100 ? "¡Perfecto! 🎉" : r.score>=75 ? "¡Muy bien! Casi perfecto." : r.score>=50 ? "¡Bien! Otra vez." : "¡Vamos! Escucha y repite.";
   line("score", `${r.score}% · ${praise}`);
@@ -325,24 +680,105 @@ async function showResult(heard, r){
     for (const w of missed) { const bd = breakdown(w); if (!bd) continue; const btn = document.createElement("button"); btn.type = "button"; btn.innerHTML = bd.syl.map((s,i)=> i===bd.st ? "<b>"+s.toUpperCase()+"</b>" : s).join("-"); btn.onclick = () => speak(w.replace(/[¿?¡!.,]/g,""), 0.5); b.append(btn); }
     const tips = line("tips",""); for (const [k,v] of tipsFor(missed)) { const t = document.createElement("div"); t.className = "tip"; t.innerHTML = "<b></b>"; t.querySelector("b").textContent = k; t.append(v); tips.append(t); }
   }
-  logAttempt(r.score);
+  recordAttempt({kind:"say", es:target.es, en:target.en || "", score:r.score, ok:words.map((_,i)=>r.ok[i]?"1":"0").join(""), heard:heard.slice(0,120), ...(conf>0 ? {conf:Math.round(conf*100)/100} : {})});
   // Sofía says it back: the missed words slowly, then the whole phrase
   for (const w of missed.slice(0,3)) await speak(w.replace(/[¿?¡!.,]/g,""), 0.5);
-  await speak(current.es, missed.length ? 0.7 : 0.9);
+  await speak(target.es, missed.length ? 0.7 : 0.9);
 }
-const hist = [];
-function logAttempt(score){ hist.unshift(`${who.value.trim() || "You"}: ${current.es} · ${score}%`); $("#history").replaceChildren(...hist.slice(0,15).map(t=>{ const d = document.createElement("div"); d.textContent = t; return d; })); }
+function renderToday(){
+  const p = peek(), today = new Date().toDateString();
+  const list = p ? p.attempts.filter(a => new Date(a.t).toDateString()===today).slice(-15).reverse() : [];
+  $("#history").replaceChildren(...(list.length ? list.map(a => el("div", "", `${new Date(a.t).toLocaleTimeString([], {hour:"numeric", minute:"2-digit"})} · ${a.kind==="local" ? "🇲🇽 " : ""}${a.es} · ${a.score}%`)) : [el("span", "muted", "Nothing yet. Every try is saved to 📈 Progress.")]));
+}
+
+/* ---------- 🇲🇽 Say it local: the Dialect score ----------
+   local = what people in Mexico say (100) · ok = understood, not the Mexican choice (75)
+   textbook = Spain / textbook Spanish (50) · bad = avoid in Mexico (0) */
+const LOCAL = [
+  {q:"Say “my car”", hint:"Talking about your rental car.", model:"mi carro", local:["carro"], ok:["auto"], textbook:["coche"], tip:"Coche is Spain. In Mexico it's carro (auto also works)."},
+  {q:"Say “my cell phone”", hint:"Asking someone to watch it.", model:"mi celular", local:["celular","cel"], textbook:["móvil"], tip:"Móvil is Spain. Mexico says celular, or just cel."},
+  {q:"Ask for an orange juice", hint:"At breakfast.", model:"Un jugo de naranja, por favor.", local:["jugo"], textbook:["zumo"], tip:"Zumo is Spain. Jugo everywhere in the Americas."},
+  {q:"Ask the kids: “Are you all hungry?”", hint:"Talking to the whole group.", model:"¿Ustedes tienen hambre?", local:["ustedes"], textbook:["vosotros","tenéis","teneis"], tip:"Mexico never uses vosotros. Ustedes is “you all”, even with your own kids."},
+  {q:"Ask where the pool is", hint:"At the hotel.", model:"¿Dónde está la alberca?", local:["alberca"], ok:["piscina"], tip:"Alberca is Mexican. Piscina is understood (and what you'll hear in the DR)."},
+  {q:"Ask for two bus tickets", hint:"At the ticket window.", model:"Dos boletos, por favor.", local:["boleto","boletos"], textbook:["billete","billetes"], tip:"In Mexico a ticket is a boleto. A billete is a bank note."},
+  {q:"Say “the bus”", hint:"City bus, Mexico City style.", model:"el camión", local:["camión","camion"], ok:["autobús","autobus","bus"], tip:"In Mexico the city bus is often el camión. Autobús is fine too."},
+  {q:"Say “I'll do it in a bit”", hint:"Someone asks you to grab the towels.", model:"Ahorita lo hago.", local:["ahorita","al rato"], ok:["luego","después","despues"], tip:"Ahorita is the most Mexican word there is: “in a bit” (or never)."},
+  {q:"Say “How cool!”", hint:"You see the pyramids.", model:"¡Qué padre!", local:["padre","chido","chida"], ok:["chulo","bonito","increíble","increible"], textbook:["guay","mola"], tip:"Guay is Spain. Mexicans say ¡qué padre! or ¡qué chido!"},
+  {q:"A friend asks “See you at 7?” Answer “OK!”", hint:"Casual.", model:"¡Sale!", local:["sale","va","órale","orale","ándale","andale"], ok:["está bien","esta bien","de acuerdo","ok","okey"], textbook:["vale"], tip:"Vale is Spain. Mexicans say ¡sale!, ¡va! or ¡órale!"},
+  {q:"Ask for three tacos al pastor, politely", hint:"At a taco stand.", model:"¿Me da tres tacos al pastor, por favor?", local:["me da","me das","me regala","me regalas","me pasa"], ok:["quisiera","me puede dar"], textbook:["me pone","quiero"], tip:"Mexicans ask “¿me da…?” Quiero sounds blunt; me pone is Spain."},
+  {q:"You didn't catch what someone said. Say “Pardon?”", hint:"The polite Mexican way.", model:"¿Mande?", local:["mande"], ok:["cómo","como","perdón","perdon","disculpe"], textbook:["qué","que"], tip:"¿Mande? is the polite Mexican “pardon?”. A bare ¿qué? can sound rude."},
+  {q:"Say “No straw, please”", hint:"Ordering a drink.", model:"Sin popote, por favor.", local:["popote"], ok:["sorbete","pitillo"], textbook:["pajita","pajilla"], tip:"Popote is Mexican. (Sorbete in the DR, pajita in Spain.)"},
+  {q:"Ask for some avocado", hint:"At the market.", model:"Un aguacate, por favor.", local:["aguacate"], textbook:["palta"], tip:"Palta is South America. Mexico invented the word aguacate."},
+  {q:"Say “I lost my sunglasses”", hint:"At the beach.", model:"Perdí mis lentes de sol.", local:["lentes"], ok:["anteojos"], textbook:["gafas"], tip:"Gafas is Spain. In Mexico glasses are lentes."},
+  {q:"Tell your kid: “Put on your jacket”", hint:"It's chilly at night.", model:"Ponte la chamarra.", local:["chamarra"], ok:["chaqueta","suéter","sueter"], tip:"Chamarra is the Mexican word for jacket."},
+  {q:"Say “our apartment”", hint:"Talking about your rental.", model:"nuestro departamento", local:["departamento","depa"], ok:["apartamento"], textbook:["piso"], tip:"Mexico says departamento (or depa). Piso is Spain."},
+  {q:"Call the waiter over for the bill", hint:"At a restaurant.", model:"¡Joven! La cuenta, por favor.", local:["joven","señorita","senorita"], ok:["disculpe","perdón","perdon","mesero"], textbook:["camarero"], tip:"In Mexico you call a waiter joven (or señorita), whatever their age. Camarero is Spain."},
+  {q:"Ask where the bathroom is", hint:"Anywhere.", model:"¿Dónde está el baño?", local:["baño","bano","baños","banos"], ok:["sanitario","sanitarios"], textbook:["aseo","servicio","servicios"], tip:"Baño. Aseo and servicio are Spain."},
+  {q:"Say “We're going to take a taxi”", hint:"Leaving the hotel.", model:"Vamos a tomar un taxi.", local:["tomar","agarrar"], bad:["coger"], tip:"Never coger in Mexico: it's a rude word there. Use tomar or agarrar."},
+  {q:"Greet a friend casually", hint:"“What's up?”", model:"¿Qué onda?", local:["qué onda","que onda"], ok:["qué tal","que tal","cómo estás","como estas"], tip:"¿Qué onda? is very Mexican. Use it with friends and kids, not elders."},
+  {q:"Say “It's in the fridge”", hint:"At the rental.", model:"Está en el refri.", local:["refri","refrigerador"], ok:["nevera","frigorífico","frigorifico"], tip:"Mexicans say el refri. Nevera is the DR and Spain."},
+  {q:"Order a corn on the cob with chili", hint:"Street food.", model:"Un elote con chile, por favor.", local:["elote"], ok:["mazorca"], textbook:["choclo"], tip:"Elote is Mexican street corn. Choclo is South America."},
+  {q:"Say “Take a sweater”", hint:"The boat ride gets cold.", model:"Lleva un suéter.", local:["suéter","sueter"], textbook:["jersey"], tip:"Jersey is Spain. Mexico says suéter."},
+  {q:"Ask for peanuts", hint:"At the bar.", model:"Unos cacahuates, por favor.", local:["cacahuate","cacahuates"], ok:["maní"], textbook:["cacahuete","cacahuetes"], tip:"Cacahuate is Mexican (from Nahuatl). Maní is the Caribbean word."},
+  {q:"Squeeze past someone in a crowded aisle", hint:"“Excuse me.”", model:"Con permiso.", local:["permiso"], ok:["perdón","perdon","disculpe","disculpa"], tip:"Con permiso is what Mexicans say to get by. Perdón is for bumping into someone."},
+  {q:"Order a cold beer, casual", hint:"At the beach bar.", model:"Una chela bien fría, por favor.", local:["chela","chelas"], ok:["cerveza"], textbook:["caña"], tip:"Chela is Mexican slang for beer. Caña is a small draft in Spain."},
+  {q:"Ask to borrow a pen", hint:"Filling in a form.", model:"¿Me presta una pluma?", local:["pluma"], ok:["lapicero"], textbook:["bolígrafo","boligrafo","boli"], tip:"In Mexico a pen is a pluma. Bolígrafo is understood but sounds like Spain."},
+  {q:"Say “I forgot my swimsuit”", hint:"At the pool.", model:"Olvidé mi traje de baño.", local:["traje de baño","traje de bano"], textbook:["bañador","banador"], tip:"Traje de baño in Mexico. Bañador is Spain."},
+];
+const fold = s => s.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"").replace(/[¿?¡!.,]/g," ").trim();
+function judgeLocal(item, heard){
+  const h = " " + fold(heard).replace(/\s+/g," ") + " ";
+  const has = list => (list||[]).find(x => h.includes(" " + fold(x) + " "));
+  let w;
+  if ((w = has(item.bad))) return {score:0, verdict:"avoid", word:w};
+  const tb = has(item.textbook), loc = has(item.local);
+  if (loc && !tb) return {score:100, verdict:"local", word:loc};
+  if (tb) return {score:50, verdict:"textbook", word:tb};
+  if ((w = has(item.ok))) return {score:75, verdict:"ok", word:w};
+  return {score:0, verdict:"miss"};
+}
+let localItem = null, shown = false;
+function nextLocal(){
+  const p = peek(), last = new Map(p ? localList(p).map(a=>[a.es, a.score]) : []);
+  const pool = LOCAL.filter(x => x !== localItem);
+  const rank = x => last.has(x.q) ? last.get(x.q) : -1;   // new cards first, then your weakest
+  const low = Math.min(...pool.map(rank)), choices = pool.filter(x => rank(x) === low);
+  showLocal(choices[Math.floor(Math.random()*choices.length)]);
+}
+function showLocal(item){
+  if (!item) return;
+  localItem = item; shown = false;
+  const p = peek(), done = p ? new Set(localList(p).map(a=>a.es)).size : 0;
+  $("#local-count").textContent = `Say it like a local · ${done} of ${LOCAL.length} cards tried`;
+  $("#local-q").textContent = item.q; $("#local-hint").textContent = item.hint || "";
+  $("#local-result").replaceChildren(); note("", "", "#local-status");
+}
+$("#local-next").onclick = nextLocal;
+$("#local-show").onclick = () => { if (!localItem) return nextLocal(); shown = true; const box = $("#local-result"); box.replaceChildren(el("div", "model", localItem.model), el("div", "tip", localItem.tip)); speak(localItem.model, 0.8); };
+$("#local-mic").onclick = () => {
+  if (!localItem) nextLocal();
+  const item = localItem;
+  listen($("#local-mic"), "#local-status", async alts => {
+    let best = null; for (const a of alts) { const j = judgeLocal(item, a.t); if (!best || j.score > best.j.score) best = {...a, j}; }
+    const j = best.j, box = $("#local-result"); box.replaceChildren();
+    const head = {local:"¡Eso! Totally Mexican 🇲🇽", ok:"Understood, but not the Mexican word", textbook:"That's textbook / Spain Spanish", avoid:"Careful! Avoid that word in Mexico", miss:"Didn't hear the key word"}[j.verdict];
+    box.append(el("div", "verdict", `${j.score}% · ${head}`), el("div", "heard", `Heard: “${best.t}”` + (j.word ? ` · key word: ${j.word}` : "")), el("div", "model", "Local: " + item.model), el("div", "tip", item.tip));
+    recordAttempt({kind:"local", es:item.q, en:item.hint || "", score:j.score, verdict:j.verdict, heard:best.t.slice(0,120), model:item.model, tip:item.tip, ...(shown ? {peeked:true} : {})});
+    $("#local-count").textContent = `Say it like a local · ${new Set(localList(me()).map(a=>a.es)).size} of ${LOCAL.length} cards tried`;
+    await speak(item.model, j.score===100 ? 0.9 : 0.75);
+  });
+};
+
+/* ---------- start-up ---------- */
 renderList();
-$("#ver").textContent = "Sofía version " + APP_VERSION + " · " + LESSONS.length + " lessons · " + ((window.SOFIA_DICT||[]).length) + " dictionary entries";
+renderToday();
+$("#ver").textContent = "Sofía version " + APP_VERSION + " · " + LESSONS.length + " lessons · " + ((window.SOFIA_DICT||[]).length) + " dictionary entries · " + LOCAL.length + " local cards";
+
 /* ---------- offline dictionary ---------- */
-const DICT = (window.SOFIA_DICT || []).map((d,i) => ({...d, i, key: (d.es+" | "+d.en+" | "+(d.note||"")).toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g,"")}));
+const DICT = (window.SOFIA_DICT || []).map((d,i) => ({...d, i, key: (d.es+" | "+d.en+" | "+(d.note||"")).toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"")}));
 let dictCat = "All", saved = new Set();
 try { saved = new Set(JSON.parse(localStorage.getItem("sofia-saved") || "[]")); } catch(_){}
 const keepSaved = () => { try { localStorage.setItem("sofia-saved", JSON.stringify([...saved])); } catch(_){} };
-const fold = s => s.toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g,"").replace(/[¿?¡!.,]/g," ").trim();
-function setTab(dict){ document.body.classList.toggle("dict-mode", dict); $("#tab-dict").setAttribute("aria-selected", dict); $("#tab-practise").setAttribute("aria-selected", !dict); if (dict) { renderDict(); } try { localStorage.setItem("sofia-tab", dict ? "dict" : "practise"); } catch(_){} }
-$("#tab-dict").onclick = () => setTab(true);
-$("#tab-practise").onclick = () => setTab(false);
 function renderCats(){
   const cats = ["All", "★ Saved", ...new Set(DICT.map(d=>d.cat))];
   $("#dict-cats").replaceChildren(...cats.map(c => { const b = document.createElement("button"); b.type = "button"; b.textContent = c; b.setAttribute("aria-pressed", c===dictCat); b.onclick = () => { dictCat = c; renderCats(); renderDict(); }; return b; }));
@@ -355,7 +791,7 @@ function renderDict(){
     const rank = d => wordStart.test(fold(d.es)) ? 0 : wordStart.test(fold(d.en)) ? 1 : 2;   // a match in the word itself beats a match in a note
     list.sort((a,b) => rank(a)-rank(b) || a.es.length-b.es.length);
   }
-  $("#dict-count").textContent = DICT.length ? `${list.length} of ${DICT.length} entries${list.length>80?" · showing the first 80, type more to narrow it":""}` : "The offline dictionary is coming in an update today. Open Sofía with a signal later and it will appear here.";
+  $("#dict-count").textContent = DICT.length ? `${list.length} of ${DICT.length} entries${list.length>80?" · showing the first 80, type more to narrow it":""}` : "The offline dictionary is coming in an update. Open Sofía with a signal later and it will appear here.";
   $("#dict-list").replaceChildren(...list.slice(0,80).map(d => {
     const row = document.createElement("div"); row.className = "entry";
     const es = document.createElement("div"); es.className = "es"; es.textContent = d.es;
@@ -363,7 +799,7 @@ function renderDict(){
     const acts = document.createElement("div"); acts.className = "acts";
     const say = document.createElement("button"); say.type = "button"; say.textContent = "🔊"; say.setAttribute("aria-label","Say "+d.es); say.onclick = () => speak(d.es, 0.85);
     const star = document.createElement("button"); star.type = "button"; star.className = "star"; star.textContent = "★"; star.setAttribute("aria-label","Save "+d.es); star.setAttribute("aria-pressed", saved.has(d.es)); star.onclick = () => { saved.has(d.es) ? saved.delete(d.es) : saved.add(d.es); keepSaved(); star.setAttribute("aria-pressed", saved.has(d.es)); };
-    const go = document.createElement("button"); go.type = "button"; go.className = "go"; go.textContent = "🎤"; go.setAttribute("aria-label","Practise "+d.es); go.onclick = () => { setTab(false); choose({es:d.es, en:d.en}); document.querySelector(".target").scrollIntoView({behavior:"smooth", block:"center"}); };
+    const go = document.createElement("button"); go.type = "button"; go.className = "go"; go.textContent = "🎤"; go.setAttribute("aria-label","Practise "+d.es); go.onclick = () => practiseThis(d.es, d.en);
     acts.append(say, star, go); row.append(es, acts, en);
     if (d.note) { const nt = document.createElement("div"); nt.className = "nt"; nt.textContent = d.note; row.append(nt); }
     return row;
@@ -371,7 +807,11 @@ function renderDict(){
 }
 $("#dict-q").addEventListener("input", renderDict);
 renderCats();
-try { if (localStorage.getItem("sofia-tab")==="dict") setTab(true); } catch(_){}
+try { const t = localStorage.getItem("sofia-tab"); if (["practise","local","progress","dict"].includes(t)) setTab(t); } catch(_){}
+
+/* coming back to the app after 20+ minutes shows "Since last time" */
+maybeReview(false);
+document.addEventListener("visibilitychange", () => { const p = peek(); if (!p) return; if (document.hidden) { p.lastSeen = new Date().toISOString(); saveProg(); } else maybeReview(false); });
 
 /* install + offline: lessons and the page work without a signal; listening needs internet */
 if ("serviceWorker" in navigator) {
@@ -381,7 +821,7 @@ if ("serviceWorker" in navigator) {
     if (ok.length && ok.every(Boolean)) $("#offline-badge").textContent = "✓ Saved for offline";
   }).catch(()=>{});
 }
-function netNote(){ if (!navigator.onLine) { $("#warn").hidden = false; $("#warn").textContent = "No signal: you can read lessons and hear them (if your phone has a Spanish voice), but 🎤 needs internet."; } else if ($("#warn").textContent.startsWith("No signal")) $("#warn").hidden = true; }
+function netNote(){ if (!navigator.onLine) { $("#warn").hidden = false; $("#warn").textContent = "No signal: you can read lessons, hear them (if your phone has a Spanish voice) and see your scores, but 🎤 needs internet."; } else if ($("#warn").textContent.startsWith("No signal")) $("#warn").hidden = true; }
 addEventListener("online", netNote); addEventListener("offline", netNote); netNote();
 </script>
 </body>
