@@ -27,7 +27,7 @@ h2{font-size:24px} h3{font-size:19px;margin-top:6px}
 .muted{color:var(--muted)}
 .bar{display:flex;flex-wrap:wrap;gap:10px;align-items:end}
 .bar label{display:flex;flex-direction:column;gap:3px;font-size:13px;color:var(--muted)}
-select,input[type=text]{font:inherit;color:inherit;border:1.5px solid var(--line);border-radius:10px;padding:8px 10px;background:var(--panel)}
+select,input[type=text],input[type=number],input[type=date]{font:inherit;color:inherit;border:1.5px solid var(--line);border-radius:10px;padding:8px 10px;background:var(--panel)}
 .card{background:var(--panel);border:1px solid var(--line);border-radius:18px;padding:18px 20px}
 .list{display:flex;flex-direction:column;gap:6px;max-height:260px;overflow-y:auto}
 .item{display:flex;justify-content:space-between;gap:10px;align-items:center;border:1px solid var(--line);border-radius:12px;padding:8px 12px;background:var(--bg);cursor:pointer;text-align:left;font:inherit;color:inherit}
@@ -40,6 +40,14 @@ select,input[type=text]{font:inherit;color:inherit;border:1.5px solid var(--line
 .btn{border:0;border-radius:999px;padding:12px 20px;font:inherit;font-weight:700;cursor:pointer;background:var(--sea);color:#fff}
 .btn.ghost{background:transparent;color:var(--ink);border:1.5px solid var(--line)}
 .btn.small{padding:7px 14px;font-size:14px}
+.any{border:2px solid var(--sea);background:linear-gradient(var(--sea-soft),var(--panel) 150px)}
+#any{display:block;width:100%;font:inherit;font-size:19px;line-height:1.35;color:inherit;border:2px solid var(--sea);border-radius:14px;padding:12px 14px;background:var(--panel);resize:vertical;min-height:64px}
+.any-src{font-size:14px;margin:10px 0 6px;font-weight:600}
+.any-src.good{color:var(--jungle)} .any-src.warn2{color:var(--gold)}
+#any-out .tip{margin-top:6px}
+#mine-box{margin-top:12px}
+#mine{display:flex;flex-direction:column;gap:6px;margin-top:8px}
+.btn:disabled{opacity:.55;cursor:wait}
 .btn.mic{background:var(--rose);font-size:18px;padding:14px 26px}
 .btn.mic.on{animation:pulse 1s infinite}
 @keyframes pulse{50%{box-shadow:0 0 0 10px color-mix(in srgb,var(--rose) 25%,transparent)}}
@@ -69,7 +77,7 @@ select,input[type=text]{font:inherit;color:inherit;border:1.5px solid var(--line
 .tab[aria-selected="true"]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
 .offline-badge{margin-left:auto;font-family:var(--mono);font-size:12px;color:var(--jungle)}
 [data-panel]{display:none}
-body[data-tab="practise"] [data-panel="practise"],body[data-tab="local"] [data-panel="local"],body[data-tab="progress"] [data-panel="progress"],body[data-tab="dict"] [data-panel="dict"]{display:block}
+body[data-tab="practise"] [data-panel="practise"],body[data-tab="local"] [data-panel="local"],body[data-tab="progress"] [data-panel="progress"],body[data-tab="dict"] [data-panel="dict"],body[data-tab="board"] [data-panel="board"]{display:block}
 #dict-q{width:100%;font:inherit;font-size:18px;color:inherit;border:2px solid var(--sea);border-radius:14px;padding:12px 14px;background:var(--panel)}
 .chips{display:flex;gap:6px;overflow-x:auto;padding:10px 0 4px;-webkit-overflow-scrolling:touch}
 .chips button{flex:none;font:inherit;font-size:13px;border:1.5px solid var(--line);background:var(--bg);color:inherit;border-radius:999px;padding:6px 12px;cursor:pointer;white-space:nowrap}
@@ -98,6 +106,11 @@ body[data-tab="practise"] [data-panel="practise"],body[data-tab="local"] [data-p
 .row .t b{font-family:var(--display);font-size:17px;display:block;line-height:1.2}
 .row .t small{color:var(--muted);display:block}
 .row.flag{border-color:var(--rose);background:var(--rose-soft)}
+.row.me{border-color:var(--sea);box-shadow:0 0 0 1px var(--sea)}
+.pts{font-family:var(--display);font-size:22px;font-weight:800;white-space:nowrap}
+.champ{font-family:var(--display);font-size:19px;background:var(--gold-soft);border-radius:12px;padding:8px 12px}
+details summary{cursor:pointer;font-weight:700;margin-top:8px}
+.tile h3{margin:0 0 6px}
 .row > .btn{flex:none;white-space:nowrap}
 .meter{height:10px;border-radius:99px;background:var(--soft);overflow:hidden;margin-top:4px;min-width:90px}
 .meter i{display:block;height:100%;background:var(--sea);border-radius:99px}
@@ -142,6 +155,7 @@ textarea{width:100%;min-height:160px;font-family:var(--mono);font-size:12px;bord
     <button class="tab" role="tab" data-tab="practise" aria-selected="true" type="button">🎤 Practise</button>
     <button class="tab" role="tab" data-tab="local" aria-selected="false" type="button">🇲🇽 Say it local</button>
     <button class="tab" role="tab" data-tab="progress" aria-selected="false" type="button">📈 Progress</button>
+    <button class="tab" role="tab" data-tab="board" aria-selected="false" type="button">🏆 Board</button>
     <button class="tab" role="tab" data-tab="dict" aria-selected="false" type="button">📖 Dictionary</button>
     <span class="offline-badge" id="offline-badge"></span>
   </div>
@@ -153,19 +167,21 @@ textarea{width:100%;min-height:160px;font-family:var(--mono);font-size:12px;bord
     <div class="dict-list" id="dict-list"></div>
   </div>
 
-  <div class="card" data-panel="practise">
-    <div class="bar">
-      <label>Your name<input type="text" id="who" placeholder="Your first name" maxlength="20" autocomplete="given-name"></label>
-      <label>Lesson<select id="night"></select></label>
-      <label style="flex:1 1 240px">Or type any Spanish phrase<input type="text" id="free" placeholder="¿Dónde está la alberca?"></label>
-      <button class="btn ghost" id="use-free" type="button">Practise this</button>
+  <div class="card any" data-panel="practise">
+    <h2>✍️ Say anything</h2>
+    <p class="muted" style="margin:2px 0 10px">Type it in English or Spanish, names and all. Sofía turns it into Mexican Spanish, says it, and checks you.</p>
+    <textarea id="any" rows="2" maxlength="300" placeholder="Hello, my name is Alex. We're from Canada." aria-label="Type anything in English or Spanish" enterkeyhint="go" autocapitalize="sentences"></textarea>
+    <div class="btns" style="margin-top:10px">
+      <button class="btn" id="any-go" type="button">🇲🇽 Translate + practise</button>
+      <button class="btn ghost" id="any-clear" type="button">Clear</button>
     </div>
-    <div class="list" id="list" style="margin-top:12px"></div>
+    <div class="say-status" id="any-status" role="status" aria-live="polite"></div>
+    <div id="any-out"></div>
+    <details id="mine-box" hidden><summary>★ My phrases (<span id="mine-n">0</span>)</summary><div class="rows" id="mine"></div></details>
   </div>
-
   <div class="card" data-panel="practise">
     <div class="muted" id="en"></div>
-    <div class="target" id="target">Tap a phrase in the list above</div>
+    <div class="target" id="target">Type something above, or pick a lesson phrase below</div>
     <div class="syl" id="syl"></div>
     <div class="btns">
       <button class="btn" id="play" type="button">🔊 Hear it</button>
@@ -176,6 +192,13 @@ textarea{width:100%;min-height:160px;font-family:var(--mono);font-size:12px;bord
     <div class="result" id="result"></div>
   </div>
 
+  <div class="card" data-panel="practise">
+    <div class="bar">
+      <label>Your name<input type="text" id="who" placeholder="Your first name" maxlength="20" autocomplete="given-name"></label>
+      <label>Lesson<select id="night"></select></label>
+    </div>
+    <div class="list" id="list" style="margin-top:12px"></div>
+  </div>
   <div class="card" data-panel="practise">
     <h2>Today's tries</h2>
     <div class="history" id="history"><span class="muted">Nothing yet.</span></div>
@@ -198,6 +221,8 @@ textarea{width:100%;min-height:160px;font-family:var(--mono);font-size:12px;bord
   </div>
 
   <div class="card" data-panel="progress" id="progress"></div>
+
+  <div class="card" data-panel="board"><div id="board"></div><div class="say-status" id="board-status" role="status" aria-live="polite"></div></div>
 
   <p class="version" id="ver"></p>
   <p class="muted" style="font-size:13px">Voice: <span id="voice-name">loading…</span>. The dictionary, lessons, scores and 🔊 work with no signal once the app has been opened online (🔊 needs a Spanish voice on the phone). 🎤 checking uses your phone's speech recognition, which normally needs data. Your scores are saved on this phone only. To install: Chrome menu ⋮ → <b>Add to Home screen</b> / <b>Install app</b>.</p>
@@ -319,7 +344,7 @@ function tipsFor(words){
 }
 
 /* ---------- voice out ---------- */
-const APP_VERSION = "2026-11-02a";
+const APP_VERSION = "2026-11-02c";
 /* every button answers right where you tapped: no silent failures */
 let toastTimer = null;
 function note(msg, kind="", where="#say-status"){ const s = $(where); if (!s) return; s.textContent = msg; s.className = "say-status" + (kind ? " "+kind : ""); if (where==="#toast") { clearTimeout(toastTimer); toastTimer = setTimeout(()=>{ s.textContent = ""; }, kind==="bad" ? 7000 : 3500); } }
@@ -354,6 +379,7 @@ function setTab(name){
   speakWhere = name==="local" ? "#local-status" : name==="practise" ? "#say-status" : "#toast";   // Progress and Dictionary use the pop-up line
   if (name==="dict") renderDict();
   if (name==="progress") renderProgress();
+  if (name==="board") renderBoard();
   if (name==="local" && !localItem) nextLocal();
   try { localStorage.setItem("sofia-tab", name); } catch(_){}
 }
@@ -362,7 +388,7 @@ document.querySelectorAll(".tab").forEach(t => t.onclick = () => setTab(t.datase
 /* ---------- who's practising (each person keeps their own scores) ---------- */
 const who = $("#who");
 try { who.value = localStorage.getItem("sofia-who") || ""; } catch(_){}
-who.onchange = () => { try { localStorage.setItem("sofia-who", who.value.trim()); } catch(_){} renderToday(); if (tabNow==="progress") renderProgress(); $("#review").hidden = true; maybeReview(true); };
+who.onchange = () => { try { localStorage.setItem("sofia-who", who.value.trim()); } catch(_){} renderToday(); if (tabNow==="progress") renderProgress(); $("#review").hidden = true; maybeReview(true); if (tabNow==="board") renderBoard(); };
 
 /* ---------- progress: every try is kept on this phone, per person ---------- */
 const PKEY = "sofia-progress-v1";
@@ -381,7 +407,7 @@ function recordAttempt(a){
   p.attempts.push(a); if (p.attempts.length > 2000) p.attempts.splice(0, p.attempts.length - 2000);
   p.lastSeen = a.t;
   checkStrikes(p, a);
-  saveProg(); renderToday();
+  saveProg(); renderToday(); queueSync();
 }
 
 /* two tries in a row at 25% or less on the same phrase = alert + Needs Work list. 75%+ later clears it. */
@@ -551,6 +577,8 @@ function renderProgress(){
   tiles.append(tile("Dialect", dia==null ? "—" : dia, trendLine(trend(dialectScore, loc), dia==null ? `${loc.length} of 3 local cards to unlock` : band(dia))));
   tiles.append(tile("Tries this week", week.length, `${p.attempts.length} all time`));
   const ph = phraseStats(say); tiles.append(tile("Phrases at 75%+", ph.filter(o=>o.recent>=75).length, `of ${ph.length} practised`));
+  const sb = scoreBook(p), wkPts = Math.round(weekDays(weekKey(Date.now())).reduce((a,d)=>a+(sb.daily[d]||0),0));
+  tiles.append(tile("Points", sb.total.toLocaleString(), `${wkPts} this week` + (sb.streak ? ` · 🔥 ${sb.streak}-day streak` : "")));
   box.append(tiles);
   box.append(el("p", "muted", "Accent = how clearly a Mexican-Spanish ear understands you: words caught on your last 40 tries, plus how sure the phone was. It's a good guide, not a sound-by-sound grade. Dialect = how local your word choices are, from the 🇲🇽 cards."));
 
@@ -626,13 +654,223 @@ function renderList(){
   const items = [...(L.phrases||[]).map(p=>({es:p.es, en:p.en, say:p.say})), ...(L.dialogue||[]).map(d=>({es:d.es, en:`${d.who}: ${d.en}`}))];
   const p = peek(), stats = p ? new Map(phraseStats(sayList(p)).map(o=>[o.es,o])) : new Map();
   let first = null;
-  for (const it of items) { const b = document.createElement("button"); b.type = "button"; b.className = "item"; b.innerHTML = "<span><b></b><br><small></small></span><small class='best'></small>"; b.querySelector("b").textContent = it.es; b.querySelector("small").textContent = it.en; const st = stats.get(it.es); if (st) b.querySelector(".best").textContent = (p.needs[it.es] && !p.needs[it.es].cleared ? "⚠ " : "") + "best " + st.best + "%"; b.onclick = () => { document.querySelectorAll(".item.sel").forEach(x=>x.classList.remove("sel")); b.classList.add("sel"); choose(it); }; box.append(b); first = first || b; }
+  for (const it of items) { const b = document.createElement("button"); b.type = "button"; b.className = "item"; b.innerHTML = "<span><b></b><br><small></small></span><small class='best'></small>"; b.querySelector("b").textContent = it.es; b.querySelector("small").textContent = it.en; const st = stats.get(it.es); if (st) b.querySelector(".best").textContent = (p.needs[it.es] && !p.needs[it.es].cleared ? "⚠ " : "") + "best " + st.best + "%"; b.onclick = ev => { document.querySelectorAll(".item.sel").forEach(x=>x.classList.remove("sel")); b.classList.add("sel"); choose(it); if (ev && ev.isTrusted) $("#target").scrollIntoView({behavior:"smooth", block:"nearest"}); }; box.append(b); first = first || b; }
   if (first) first.click();   // a phrase is always selected, so the buttons always have something to do
 }
 function choose(it){ current = it; $("#target").textContent = it.es; $("#en").textContent = it.en || ""; $("#syl").textContent = phraseBreak(it.es) + (it.say ? "   ·   say: " + it.say : ""); $("#result").replaceChildren(); note(""); }
-$("#use-free").onclick = () => { const t = $("#free").value.trim(); if (t) { document.querySelectorAll(".item.sel").forEach(x=>x.classList.remove("sel")); choose({es:t, en:"Your own phrase"}); note("Ready: tap 🔊 or 🎤", "ok"); } else note("Type a Spanish phrase in the box first.", "bad"); };
-$("#play").onclick = () => current ? speak(current.es, 0.9) : note("Tap a phrase in the list first.", "bad");
-$("#slow").onclick = () => current ? speak(current.es, 0.55) : note("Tap a phrase in the list first.", "bad");
+$("#play").onclick = () => current ? speak(current.es, 0.9) : note("Type something above or tap a lesson phrase first.", "bad");
+$("#slow").onclick = () => current ? speak(current.es, 0.55) : note("Type something above or tap a lesson phrase first.", "bad");
+
+/* ---------- ✍️ Say anything: type English or Spanish (names and all), get Mexican Spanish to practise ----------
+   1) Sofía's phrasebook, on the phone: whole dictionary entries plus common sentence patterns
+      ("my name is …", "this is my wife …", "where is the …", "how much is …"). Names stay as typed. Works offline.
+   2) Anything else goes to a free online translator (MyMemory, no account) and is marked "check it".
+   Answers are kept on the phone, so a sentence you've translated once works offline after that. */
+const ANY_CACHE = "sofia-any-cache", MINE_KEY = "sofia-mine";
+const ES_HINT = new Set("hola me llamo soy es está estoy dónde donde cuánto cuanto cuesta quiero quisiera necesito tengo tiene tienes el la los las un una del por favor gracias qué cómo mi mis tu su somos estamos pero muy bien sí hay para con buenos buenas días noches tardes".split(" "));
+const EN_HINT = new Set("the an is are am i i'm im my your you we we're our where what how when who why much many please thank thanks hello hi and to of for can could would like want need have has do does this that it's its from".split(" "));
+function looksSpanish(t){
+  if (/[ñ¿¡áéíóú]/i.test(t)) return true;
+  const ws = t.toLowerCase().replace(/[^a-zñáéíóúü'\s]/g, " ").split(/\s+/).filter(Boolean);
+  let es = 0, en = 0; for (const w of ws) { if (ES_HINT.has(w)) es++; if (EN_HINT.has(w)) en++; }
+  return es > en;
+}
+const enKey = s => s.toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "").replace(/’/g, "'").replace(/[^a-z0-9' ]/g, " ").replace(/\s+/g, " ").trim();
+let EN_INDEX = null, ES_INDEX = null;
+function enIndex(){
+  if (EN_INDEX) return EN_INDEX;
+  EN_INDEX = new Map();
+  for (const d of DICT) {
+    if (/\.\.\.|…/.test(d.es)) continue;   // "me llamo..." is a frame, not an answer
+    const vs = d.en.replace(/\(.*?\)/g, "").split("/").map(enKey).filter(Boolean); if (!vs.length) continue;
+    const first = vs[0].split(" ");
+    for (const v of vs) {
+      const n = v.split(" ").length;
+      const k = n === first.length ? v : n < first.length ? first.slice(0, first.length - n).concat(v).join(" ") : null;   // "where is the bathroom / washroom" → "where is the washroom"
+      if (k && !EN_INDEX.has(k)) EN_INDEX.set(k, d);
+      const bareK = k && k.replace(/^the /, "");   // "the check" also answers "check"
+      if (bareK && bareK !== k && !EN_INDEX.has(bareK)) EN_INDEX.set(bareK, d);
+    }
+  }
+  for (const [a, b] of Object.entries(EN_ALIAS)) if (!EN_INDEX.has(a) && EN_INDEX.has(b)) EN_INDEX.set(a, EN_INDEX.get(b));
+  return EN_INDEX;
+}
+function esIndex(){ if (!ES_INDEX) { ES_INDEX = new Map(); for (const d of DICT) { const k = enKey(d.es); if (k && !ES_INDEX.has(k)) ES_INDEX.set(k, d); } } return ES_INDEX; }
+
+const EN_ALIAS = {pool:"swimming pool", "the pool":"swimming pool", restroom:"bathroom", toilet:"bathroom", loo:"bathroom", "ladies room":"bathroom", "mens room":"bathroom"};
+const EN_NUM = {one:1,two:2,three:3,four:4,five:5,six:6,seven:7,eight:8,nine:9,ten:10,eleven:11,twelve:12};
+const PLACES = {"canada":"Canadá","mexico":"México","the us":"Estados Unidos","the usa":"Estados Unidos","the united states":"Estados Unidos","america":"Estados Unidos","the states":"Estados Unidos","england":"Inglaterra","british columbia":"Columbia Británica","bc":"Columbia Británica","the dominican republic":"la República Dominicana","spain":"España"};
+const REL = {wife:["Ella","esposa"], husband:["Él","esposo"], son:["Él","hijo"], daughter:["Ella","hija"], brother:["Él","hermano"], sister:["Ella","hermana"], mom:["Ella","mamá"], mother:["Ella","mamá"], dad:["Él","papá"], father:["Él","papá"], friend:["Él","amigo"], boyfriend:["Él","novio"], girlfriend:["Ella","novia"], kid:["Él","hijo"]};
+
+/* one sentence → Spanish, or null when the phrasebook doesn't know it */
+function phrasebook(chunk, names){
+  const o = chunk.trim().replace(/[.!?;,]+$/, "").trim(), k = enKey(o);
+  if (!k) return null;
+  const q = s => "¿" + s + "?", cap = s => s.charAt(0).toUpperCase() + s.slice(1);
+  const name = x => { const w = x.trim().replace(/[.!?,]+$/, "").split(/\s+/).filter(Boolean); if (!w.length || w.length > 3 || w.some(v => !/^[a-zà-ÿ'’-]+$/i.test(v))) return null; const n = w.map(cap).join(" "); names.push(n); return n; };
+  const noun = (x, keepArticle) => {
+    let kk = enKey(x), art = "";
+    const whole = enIndex().get(kk);
+    const m = kk.match(/^(the|a|an|some|my|our|your) (.+)$/); if (m) { art = m[1]; kk = m[2]; }
+    const d = (art === "the" && whole) || enIndex().get(kk); if (!d) return null;
+    const es = d.es.replace(/[¿?¡!.]/g, "").trim(), am = es.match(/^(el|la|los|las) (.+)$/i), a = am ? am[1].toLowerCase() : "", core = am ? am[2] : es;
+    if (art === "the") return es;
+    if (art === "a" || art === "an") return a ? {el:"un", la:"una", los:"unos", las:"unas"}[a] + " " + core : core;
+    if (art === "some") return core;
+    if (art === "my") return (/s$/.test(a) ? "mis " : "mi ") + core;
+    if (art === "our") return ({el:"nuestro", la:"nuestra", los:"nuestros", las:"nuestras"}[a] || "nuestro") + " " + core;
+    if (art === "your") return (/s$/.test(a) ? "sus " : "su ") + core;
+    return keepArticle ? es : core;
+  };
+  const place = x => PLACES[enKey(x)] || name(x);
+  // 1. the whole sentence is in the dictionary
+  const d = enIndex().get(k);
+  if (d) return d.es.replace(/[.]$/, "");
+  // 2. a greeting in front: "hello, my name is …"
+  let m = o.match(/^(hello|hi|hey|good morning|good afternoon|good evening|good night)\b[\s,!]*(.*)$/i);
+  if (m) { const g = {hello:"Hola", hi:"Hola", hey:"Hola", "good morning":"Buenos días", "good afternoon":"Buenas tardes", "good evening":"Buenas noches", "good night":"Buenas noches"}[m[1].toLowerCase()]; if (!m[2]) return g; const rest = phrasebook(m[2], names); return rest ? g + ", " + (/^¿/.test(rest) ? "¿" + rest.charAt(1).toLowerCase() + rest.slice(2) : rest.charAt(0).toLowerCase() + rest.slice(1)) : null; }
+  // 3. sentence patterns
+  if ((m = o.match(/^(?:my name is|my name's|i am called|i'm called|call me)\s+(.+)$/i))) { const n = name(m[1]); return n && "Me llamo " + n; }
+  if ((m = o.match(/^my (\w+?)(?:'s|’s| s) name is\s+(.+)$/i)) && REL[m[1].toLowerCase()]) { const n = name(m[2]); return n && "Mi " + REL[m[1].toLowerCase()][1] + " se llama " + n; }
+  if ((m = o.match(/^(?:this is|meet|here is|here's) my (\w+)[\s,]*(.*)$/i)) && REL[m[1].toLowerCase()]) { const [p, r] = REL[m[1].toLowerCase()]; if (!m[2]) return p + " es mi " + r; const n = name(m[2]); return n && p + " es mi " + r + " " + n; }
+  if ((m = o.match(/^(?:these are|they are|they're|meet) (my|our) (kids|children|sons|daughters|family|friends)$/i))) { const fam = m[2].toLowerCase(); if (fam === "family") return "Esta es " + (m[1].toLowerCase()==="my" ? "mi" : "nuestra") + " familia"; const w = {kids:"hijos", children:"hijos", sons:"hijos", daughters:"hijas", friends:"amigos"}[fam]; return (fam==="daughters" ? "Estas son " : "Estos son ") + (m[1].toLowerCase()==="my" ? "mis " : (fam==="daughters" ? "nuestras " : "nuestros ")) + w; }
+  if ((m = o.match(/^(i am|i'm|im|we are|we're|were) from\s+(.+)$/i))) { const p = place(m[2]); return p && (/^(i|im)/i.test(m[1]) ? "Soy de " : "Somos de ") + p; }
+  if ((m = o.match(/^(i am|i'm|we are|we're) (?:here )?on (?:vacation|holiday)$/i))) return /^i/i.test(m[1]) ? "Estoy de vacaciones" : "Estamos de vacaciones";
+  if ((m = o.match(/^(?:[Ii] am|[Ii]'m|[Ii]’m|[Ii]m)\s+([A-ZÀ-Ý][\wà-ÿ'’-]*(?:\s+[A-ZÀ-Ý][\wà-ÿ'’-]*)?)$/))) { const n = name(m[1]); return n && "Soy " + n; }   // "I'm Alex": capitalised = a name
+  if ((m = o.match(/^where (?:is|'s|’s) (.+)$/i)) || (m = o.match(/^wheres (.+)$/i))) { const n = noun(m[1], true); return n && q("Dónde está " + n); }
+  if ((m = o.match(/^where are (.+)$/i))) { const n = noun(m[1], true); return n && q("Dónde están " + n); }
+  if ((m = o.match(/^how much (?:is|'s|does|for) (.+?)(?: cost)?$/i))) { const n = noun(m[1], true); return n && q("Cuánto cuesta " + n); }
+  if ((m = o.match(/^how much (?:are|do) (.+?)(?: cost)?$/i))) { const n = noun(m[1], true); return n && q("Cuánto cuestan " + n); }
+  if ((m = o.match(/^(?:a )?table for (\d+|\w+)(?: people)?$/i))) { const n = /^\d+$/.test(m[1]) ? +m[1] : EN_NUM[m[1].toLowerCase()]; return n && n < 100 ? "Una mesa para " + numWords(n) + ", por favor" : null; }
+  if ((m = o.match(/^(i|we) (?:want|would like|'d like|’d like|d like)\s+(.+)$/i)) || (m = o.match(/^(i)'?d like\s+(.+)$/i))) { const n = noun(m[2], false); return n && (m[1].toLowerCase()==="i" ? "Quisiera " : "Quisiéramos ") + n; }
+  if ((m = o.match(/^(i|we) need\s+(.+)$/i))) { const n = noun(m[2], false); return n && (m[1].toLowerCase()==="i" ? "Necesito " : "Necesitamos ") + n; }
+  if ((m = o.match(/^do you have\s+(.+)$/i))) { const n = noun(m[1], false); return n && q("Tiene " + n); }
+  if ((m = o.match(/^(?:can|could|may) (i|we) (?:please )?(?:have|get)\s+(.+?)(?:,? please)?$/i))) { const n = noun(m[2], true); return n && q((m[1].toLowerCase()==="i" ? "Me da " : "Nos da ") + n + ", por favor"); }
+  if ((m = o.match(/^(.+?),? please$/i))) { const r = phrasebook(m[1], names) || noun(m[1], true); return r && (/\?$/.test(r) ? r.replace(/\?$/, ", por favor?") : cap(r) + ", por favor"); }
+  if ((m = o.match(/^please,?\s+(.+)$/i))) { const r = phrasebook(m[1], names) || noun(m[1], true); return r && "Por favor, " + r.charAt(0).toLowerCase() + r.slice(1); }
+  // 4. a single word or thing: "beach", "the check"
+  const n = noun(o, true); if (n && k.split(" ").length <= 3) return n;
+  return null;
+}
+function offlineTranslate(text){
+  const names = [], parts = text.split(/(?<=[.!?;])\s+/).map(s => s.trim()).filter(Boolean), out = [];
+  for (const p of parts) { const r = phrasebook(p, names); if (!r) return null; out.push(/[?!]$/.test(r) || parts.length === 1 && !/[.!]$/.test(p) ? r : r + "."); }
+  return {es: out.join(" ").replace(/^./, c => c.toUpperCase()), names};
+}
+/* the free translator sometimes answers in Spain Spanish: swap the common ones for the Mexican word */
+const MX_SWAP = [[/\bcoches?\b/gi, w => w.toLowerCase().endsWith("s") ? "carros" : "carro"], [/\bzumos?\b/gi, w => w.toLowerCase().endsWith("s") ? "jugos" : "jugo"], [/\bmóvil(es)?\b/gi, w => /es$/i.test(w) ? "celulares" : "celular"], [/\bordenador(es)?\b/gi, w => /es$/i.test(w) ? "computadoras" : "computadora"], [/\bpatatas\b/gi, () => "papas"], [/\bgafas\b/gi, () => "lentes"], [/\bmi nombre es\b/gi, w => w[0]==="M" ? "Me llamo" : "me llamo"]];
+function mexicanize(s){ let t = s, changed = false; for (const [re, f] of MX_SWAP) t = t.replace(re, w => { changed = true; return f(w); }); return {t, changed}; }
+function unescapeHtml(s){ const t = document.createElement("textarea"); t.innerHTML = s; return t.value; }
+async function onlineTranslate(text, from, to){
+  if (!navigator.onLine) { const e = new Error("offline"); e.offline = true; throw e; }
+  let q = text.trim();
+  if (from === "en" && /^(where|what|how|when|who|why|which|can|could|do|does|is|are|would|will|may)\b/i.test(q) && !/\?$/.test(q)) q += "?";   // a question mark keeps the translator on track
+  const ctl = new AbortController(), tm = setTimeout(() => ctl.abort(), 9000);
+  try {
+    const r = await fetch("https://api.mymemory.translated.net/get?mt=1&langpair=" + from + "|" + to + "&q=" + encodeURIComponent(q), {signal: ctl.signal});
+    const j = await r.json().catch(() => null);
+    if (j && (j.quotaFinished || +j.responseStatus === 429)) throw new Error("The free translator's daily limit is used up. Try again tomorrow, or type it in Spanish.");
+    const t = j?.responseData?.translatedText;
+    if (!r.ok || !t || +j.responseStatus !== 200) throw new Error("The online translator didn't answer. Try again in a minute.");
+    return unescapeHtml(t).trim();
+  } catch (e) {
+    if (e.name === "AbortError") throw new Error("The online translator is slow right now (weak signal?). Try again.");
+    if (e instanceof TypeError) throw new Error("Couldn't reach the online translator. Check your signal and try again.");
+    throw e;
+  } finally { clearTimeout(tm); }
+}
+let anyCache = {};
+try { anyCache = JSON.parse(localStorage.getItem(ANY_CACHE) || "{}") || {}; } catch(_){}
+function cacheAny(key, res){ anyCache[key] = {...res, t: Date.now()}; const ks = Object.keys(anyCache); if (ks.length > 150) ks.sort((a,b) => anyCache[a].t - anyCache[b].t).slice(0, ks.length - 150).forEach(x => delete anyCache[x]); try { localStorage.setItem(ANY_CACHE, JSON.stringify(anyCache)); } catch(_){} }
+
+/* typed names aren't marked wrong: the phone's ear rarely spells a name the way you typed it */
+function alignNames(target, heard){
+  const r = align(target.es, heard);
+  if (!target.names || !target.names.length) return r;
+  const T = norm(target.es), N = new Set(target.names.flatMap(n => norm(n)));
+  T.forEach((w, i) => { if (N.has(w)) r.ok[i] = true; });
+  r.score = T.length ? Math.round(100 * r.ok.filter(Boolean).length / T.length) : 0;
+  return r;
+}
+
+async function translateAny(text){
+  const key = (looksSpanish(text) ? "es:" : "en:") + enKey(text);
+  if (looksSpanish(text)) {
+    const es = text.trim(), d = esIndex().get(enKey(es));
+    if (d) return {es, en: d.en, src: "spanish"};
+    if (anyCache[key]) return anyCache[key];
+    try { const en = await onlineTranslate(es, "es", "en"); const res = {es, en, src: "spanish", enOnline: true}; cacheAny(key, res); return res; }
+    catch(_) { return {es, en: "Your own Spanish", src: "spanish"}; }   // the meaning is a bonus: you can still hear and practise it
+  }
+  const off = offlineTranslate(text);
+  if (off) return {es: off.es, en: text.trim(), src: "book", names: off.names};
+  if (anyCache[key]) return {...anyCache[key], cached: true};
+  const raw = await onlineTranslate(text, "en", "es");
+  const {t, changed} = mexicanize(raw);
+  // capitalised words you typed (not the first word, not "I") that come back unchanged are names
+  const names = [...new Set(text.split(/\s+/).slice(1).map(w => w.replace(/[^\wÀ-ÿ'’-]/g, "")).filter(w => /^[A-ZÀ-Ý]/.test(w) && w !== "I" && !/^I['’]/.test(w) && t.includes(w)))];
+  const res = {es: t, en: text.trim(), src: "online", mx: changed, names};
+  cacheAny(key, res);
+  return res;
+}
+const anyNote = (m, k) => note(m, k, "#any-status");
+let anyLast = null;
+async function runAny(){
+  const text = $("#any").value.trim().replace(/\s+/g, " ");
+  if (!text) { anyNote("Type something first, in English or Spanish.", "bad"); $("#any").focus(); return; }
+  const btn = $("#any-go"); btn.disabled = true; anyNote("Translating…", "ok"); $("#any-out").replaceChildren();
+  let res;
+  try { res = await translateAny(text); }
+  catch (e) {
+    btn.disabled = false;
+    if (e.offline) { anyNote("No signal, and that sentence isn't in Sofía's phrasebook yet. Try a simpler one (\"my name is …\", \"where is the …\", \"how much is …\"), type it in Spanish, or look the words up in 📖 Dictionary.", "bad"); }
+    else anyNote(e.message, "bad");
+    return;
+  }
+  btn.disabled = false; anyNote("");
+  anyLast = res;
+  const out = $("#any-out");
+  const src = res.src === "book" ? "✓ From Sofía's phrasebook (Mexican Spanish)" : res.src === "spanish" ? "Your Spanish, ready to practise" + (res.en && res.en !== "Your own Spanish" ? (res.enOnline ? " · the online translator says it means: " + res.en + " (rough)" : " · means: " + res.en) : "") : "⚠ Online translator" + (res.mx ? ", switched to Mexican words" : "") + (res.cached ? " (saved copy)" : "") + ". Usually right, not always: check it with Sofía if it matters.";
+  out.append(el("div", "any-src " + (res.src === "online" ? "warn2" : "good"), src));
+  if (res.names && res.names.length) out.append(el("div", "tip", `Names aren't scored. ${res.names.join(", ")} stays as you typed it. Sofía reads names with Spanish letters (a J sounds like an H), so say your own name the way you normally do.`));
+  const acts = el("div", "btns");
+  const saveBtn = button(isMine(res.es) ? "★ Saved" : "☆ Save to My phrases", () => { toggleMine(res); saveBtn.textContent = isMine(res.es) ? "★ Saved" : "☆ Save to My phrases"; }, "btn small ghost");
+  acts.append(saveBtn);
+  out.append(acts);
+  document.querySelectorAll(".item.sel").forEach(x => x.classList.remove("sel"));
+  choose({es: res.es, en: res.en, names: res.names || []});
+  $("#target").scrollIntoView({behavior: "smooth", block: "nearest"});
+  note("Ready: 🔊 to hear it, 🎤 to say it.", "ok");
+  speak(res.es, 0.9);
+}
+$("#any-go").onclick = runAny;
+$("#any").addEventListener("keydown", e => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); runAny(); } });
+$("#any-clear").onclick = () => { $("#any").value = ""; $("#any-out").replaceChildren(); anyNote(""); $("#any").focus(); };
+
+/* ★ My phrases: the sentences you typed and want to keep practising */
+let MINE = [];
+try { MINE = JSON.parse(localStorage.getItem(MINE_KEY) || "[]") || []; } catch(_){}
+const isMine = es => MINE.some(x => x.es === es);
+function toggleMine(r){
+  if (isMine(r.es)) MINE = MINE.filter(x => x.es !== r.es);
+  else { MINE.unshift({es: r.es, en: r.en, names: r.names || []}); MINE = MINE.slice(0, 60); }
+  try { localStorage.setItem(MINE_KEY, JSON.stringify(MINE)); } catch(_){ anyNote("Couldn't save on this phone (storage full or blocked).", "bad"); }
+  renderMine();
+}
+function renderMine(){
+  const box = $("#mine"); box.replaceChildren();
+  $("#mine-box").hidden = !MINE.length; $("#mine-n").textContent = MINE.length;
+  for (const m of MINE) {
+    const r = el("div", "row"), t = el("div", "t"); t.append(el("b", "", m.es), el("small", "", m.en));
+    const go = button("🎤", () => { document.querySelectorAll(".item.sel").forEach(x => x.classList.remove("sel")); choose({...m}); $("#target").scrollIntoView({behavior: "smooth", block: "nearest"}); note("Ready: 🔊 to hear it, 🎤 to say it.", "ok"); }, "btn small");
+    go.setAttribute("aria-label", "Practise " + m.es);
+    const del = button("✕", () => { toggleMine(m); if (anyLast && anyLast.es === m.es) { const sb = [...$("#any-out").querySelectorAll("button")].find(b => /Save/.test(b.textContent)); if (sb) sb.textContent = "☆ Save to My phrases"; } }, "btn small ghost");
+    del.setAttribute("aria-label", "Remove " + m.es);
+    const acts = el("div", "acts"); acts.style.display = "flex"; acts.style.gap = "6px"; acts.append(go, del);
+    r.append(t, acts); box.append(r);
+  }
+}
+renderMine();
 
 /* ---------- mic (shared by Practise and Say it local) ---------- */
 const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
@@ -662,9 +900,9 @@ function listen(btn, where, onAlts){
   }
 }
 $("#mic").onclick = () => {
-  if (!current) { note("Tap a phrase in the list first.", "bad"); return; }
+  if (!current) { note("Type something above or tap a lesson phrase first.", "bad"); return; }
   const target = current;
-  listen($("#mic"), "#say-status", alts => { let best = null; for (const a of alts) { const r = align(target.es, a.t); if (!best || r.score > best.r.score) best = {...a, r}; } showResult(target, best.t, best.r, best.c); });
+  listen($("#mic"), "#say-status", alts => { let best = null; for (const a of alts) { const r = alignNames(target, a.t); if (!best || r.score > best.r.score) best = {...a, r}; } showResult(target, best.t, best.r, best.c); });
 };
 
 async function showResult(target, heard, r, conf){
@@ -769,6 +1007,209 @@ $("#local-mic").onclick = () => {
   });
 };
 
+/* ---------- 🏆 family board: points, practice minutes, streaks, live leaderboard ---------- */
+const BOARD_DEFAULT = "";   // the scoreboard Worker's address (set once it's deployed)
+const BOARD_API = (() => { try { return localStorage.getItem("sofia-board-api") || BOARD_DEFAULT; } catch(_) { return BOARD_DEFAULT; } })();
+const dayKey = d => new Date(d).toLocaleDateString("en-CA");   // YYYY-MM-DD, phone's own time zone
+function weekKey(d){ const x = new Date(d); x.setHours(0,0,0,0); x.setDate(x.getDate() - x.getDay()); return dayKey(x); }   // weeks run Sunday to Saturday
+function weekDays(wk){ const out = [], x = new Date(wk + "T00:00:00"); for (let i=0;i<7;i++){ out.push(dayKey(x)); x.setDate(x.getDate()+1); } return out; }
+const lastWeekKey = () => { const x = new Date(); x.setDate(x.getDate()-7); return weekKey(x); };
+function streakFrom(tries){ let n = 0; const x = new Date(); if (!((tries||{})[dayKey(x)] >= 5)) x.setDate(x.getDate()-1); while ((tries||{})[dayKey(x)] >= 5) { n++; x.setDate(x.getDate()-1); } return n; }
+
+/* points: 1 a try (first 40 a day), +2 for 75%+ or +4 for 100% (3 times per phrase per day),
+   +3 the first time a phrase reaches 75%, +10 for clearing Needs Work, +5 for a day with 5+ tries.
+   Practice minutes: 30 seconds a try plus the time between tries when they're under 5 minutes apart. */
+function scoreBook(p){
+  const daily = {}, tries = {}, mins = {}, qual = {}, learned = new Set(); let lastT = 0;
+  for (const a of p.attempts) {
+    const d = dayKey(a.t), t = Date.parse(a.t);
+    tries[d] = (tries[d]||0) + 1;
+    let pts = tries[d] <= 40 ? 1 : 0;
+    const k = d + "|" + a.es;
+    if (a.score >= 75 && (qual[k]||0) < 3) { pts += a.score===100 ? 4 : 2; qual[k] = (qual[k]||0) + 1; }
+    if (a.score >= 75 && !learned.has(a.es)) { learned.add(a.es); pts += 3; }
+    daily[d] = (daily[d]||0) + pts;
+    mins[d] = (mins[d]||0) + 0.5 + (lastT && t - lastT > 0 && t - lastT <= 5*60000 ? (t - lastT)/60000 : 0);
+    lastT = t;
+  }
+  for (const v of Object.values(p.needs)) if (v.cleared) { const d = dayKey(v.cleared); daily[d] = (daily[d]||0) + 10; }
+  for (const d in tries) if (tries[d] >= 5) daily[d] = (daily[d]||0) + 5;
+  const total = Object.values(daily).reduce((a,b)=>a+b,0);
+  return {daily, tries, mins, streak: streakFrom(tries), total, learned: learned.size};
+}
+function boardStats(p){
+  const b = scoreBook(p), since = dayKey(Date.now() - 120*DAY);
+  const pick = o => Object.fromEntries(Object.entries(o).filter(([d]) => d >= since).map(([d,v]) => [d, Math.round(v*10)/10]));
+  const wk = key => { const days = new Set(weekDays(key)), inW = a => days.has(dayKey(a.t)); return {accent: accentScore(sayList(p).filter(inW)), dialect: dialectScore(localList(p).filter(inW))}; };
+  return {v:1, app:APP_VERSION, at:new Date().toISOString(), total:b.total, learned:b.learned,
+    daily:pick(b.daily), mins:pick(b.mins), tries:pick(b.tries),
+    weeks:{[weekKey(Date.now())]: wk(weekKey(Date.now())), [lastWeekKey()]: wk(lastWeekKey())},
+    accent: accentScore(sayList(p)), dialect: dialectScore(localList(p)), sounds: soundStats(sayList(p)),
+    phrases: phraseStats(p.attempts).slice(-80).map(o => ({es:o.es, r:o.recent, b:o.best, n:o.scores.length})),
+    needs: Object.keys(p.needs).filter(k => !p.needs[k].cleared)};
+}
+
+/* each name on this phone gets its own board identity (a random id + secret, kept on the phone) */
+const PLKEY = "sofia-players";
+function allPlayers(){ try { return JSON.parse(localStorage.getItem(PLKEY) || "{}") || {}; } catch(_) { return {}; } }
+function myPlayer(create){
+  const all = allPlayers(), k = personName().toLowerCase();
+  if (!all[k] && create) { const r = n => [...crypto.getRandomValues(new Uint8Array(n))].map(x=>x.toString(16).padStart(2,"0")).join(""); all[k] = {id:r(12), token:r(20), groups:[], hello:false}; try { localStorage.setItem(PLKEY, JSON.stringify(all)); } catch(_){} }
+  return all[k] || null;
+}
+function savePlayer(pl){ const all = allPlayers(); all[personName().toLowerCase()] = pl; try { localStorage.setItem(PLKEY, JSON.stringify(all)); } catch(_){} }
+const boardNote = (m, k) => note(m, k, "#board-status");
+async function boardCall(body){
+  if (!BOARD_API) throw new Error("The family board isn't switched on yet.");
+  if (!navigator.onLine) throw new Error("No signal. The board updates when you're back online.");
+  const pl = myPlayer(true), ctl = new AbortController(), to = setTimeout(() => ctl.abort(), 12000);
+  try {
+    const r = await fetch(BOARD_API.replace(/\/$/, "") + "/api", {method:"POST", headers:{"Content-Type":"application/json"}, body: JSON.stringify({...body, id:pl.id, token:pl.token, name:personName()}), signal: ctl.signal});
+    const j = await r.json().catch(() => ({error: "The board sent back something unreadable (" + r.status + ")."}));
+    if (!r.ok) throw new Error(j.error || ("Board error " + r.status));
+    if (j.groups) { pl.groups = j.groups; if (body.action === "hello") pl.hello = true; savePlayer(pl); }
+    return j;
+  } catch (e) {
+    throw new Error(e.name === "AbortError" ? "The board took too long to answer. Try again in a minute." : /fetch|network/i.test(e.message) ? "Couldn't reach the family board. Check your signal and try again." : e.message);
+  } finally { clearTimeout(to); }
+}
+async function ensureHello(){ const pl = myPlayer(true); if (!pl.hello) await boardCall({action:"hello"}); }
+
+/* your scores go up after every try (a few seconds later), when the app opens, and when the signal comes back */
+let syncTimer = null;
+function queueSync(delay=4000){ clearTimeout(syncTimer); syncTimer = setTimeout(syncBoard, delay); }
+async function syncBoard(){
+  const pl = myPlayer(false), p = peek();
+  if (!BOARD_API || !pl || !pl.groups?.length || !p || !p.attempts.length || !navigator.onLine || !who.value.trim()) return false;
+  try { await ensureHello(); await boardCall({action:"sync", stats: boardStats(p)}); if (tabNow === "board") boardNote("✓ Your scores are on the board.", "ok"); return true; }
+  catch (e) { if (tabNow === "board") boardNote(e.message, "bad"); return false; }
+}
+
+let boardGroup = null, pendingJoin = "";
+try { boardGroup = localStorage.getItem("sofia-board-group"); } catch(_){}
+function cachedBoard(code){ try { return JSON.parse(localStorage.getItem("sofia-board-cache-" + code) || "null"); } catch(_) { return null; } }
+async function renderBoard(refresh=true){
+  const box = $("#board"); box.replaceChildren();
+  box.append(el("h2", "", "🏆 Family board"));
+  if (!BOARD_API) { box.append(el("p", "muted", "The family board isn't switched on yet. It arrives in the next update.")); return; }
+  if (!who.value.trim()) {
+    box.append(el("p", "", "Type your first name so the family knows who's winning."));
+    const bar = el("div", "bar"), inp = el("input"); inp.type = "text"; inp.maxLength = 20; inp.placeholder = "Your first name"; inp.setAttribute("aria-label", "Your first name");
+    bar.append(inp, button("Save", () => { if (!inp.value.trim()) return boardNote("Type a name first.", "bad"); who.value = inp.value.trim(); who.onchange(); renderBoard(); }, "btn"));
+    box.append(bar); return;
+  }
+  const pl = myPlayer(false);
+  if (refresh && navigator.onLine && pl) { try { await boardCall({action:"hello"}); } catch(e) { boardNote(e.message, "bad"); } return renderBoard(false); }
+  const groups = myPlayer(false)?.groups || [];
+  if (pendingJoin && groups.some(g => g.code === pendingJoin)) { boardGroup = pendingJoin; pendingJoin = ""; }
+  if (!groups.length || pendingJoin) { renderJoinCreate(box, groups.length > 0); return; }
+  if (!groups.some(g => g.code === boardGroup)) boardGroup = groups[0].code;
+  try { localStorage.setItem("sofia-board-group", boardGroup); } catch(_){}
+  const chips = el("div", "chips");
+  for (const g of groups) { const b = button(g.name, () => { boardGroup = g.code; renderBoard(false); }, ""); b.setAttribute("aria-pressed", g.code === boardGroup); chips.append(b); }
+  chips.append(button("＋ Join or start a group", () => { pendingJoin = "+"; renderBoard(false); }, ""));
+  box.append(chips);
+  const holder = el("div"); box.append(holder);
+  const cached = cachedBoard(boardGroup);
+  if (cached) drawBoard(holder, cached, true);
+  else holder.append(el("p", "muted", "Loading the board…"));
+  if (!navigator.onLine) { if (!cached) holder.replaceChildren(el("p", "muted", "No signal. The board shows up once you're online.")); return; }
+  try {
+    await syncBoard();
+    const data = await boardCall({action:"board", code: boardGroup});
+    data.fetched = new Date().toISOString();
+    try { localStorage.setItem("sofia-board-cache-" + boardGroup, JSON.stringify(data)); } catch(_){}
+    holder.replaceChildren(); drawBoard(holder, data, false);
+  } catch (e) { boardNote(e.message, "bad"); if (!cached) holder.replaceChildren(el("p", "muted", "Couldn't load the board yet.")); }
+}
+function renderJoinCreate(box, hasGroups){
+  box.append(el("p", "", "Practise against each other, and together, with your family or anyone you're travelling with. Everyone joins from their own phone with a code. Only names, points and practice minutes are shared, never recordings."));
+  const j = el("div", "tile"); j.append(el("h3", "", "Join a group"));
+  const jb = el("div", "bar"), code = el("input"); code.type = "text"; code.maxLength = 8; code.placeholder = "6-letter code"; code.style.textTransform = "uppercase"; code.setAttribute("aria-label", "Group code"); if (pendingJoin && pendingJoin !== "+") code.value = pendingJoin;
+  jb.append(code, button("Join", async () => {
+    const c = code.value.trim().toUpperCase(); if (c.length < 4) return boardNote("Type the code someone sent you.", "bad");
+    boardNote("Joining…");
+    try { await ensureHello(); const r = await boardCall({action:"join", code:c}); boardGroup = r.group.code; pendingJoin = ""; boardNote(`✓ You're in “${r.group.name}”.`, "ok"); await syncBoard(); renderBoard(false); } catch(e) { boardNote(e.message, "bad"); }
+  }, "btn"));
+  j.append(jb); box.append(j);
+  const c = el("div", "tile"); c.style.marginTop = "10px"; c.append(el("h3", "", "Start a new group"));
+  const cb = el("div", "bar");
+  const lab = (t, inp) => { const l = el("label", "", t); l.append(inp); return l; };
+  const gname = el("input"); gname.type = "text"; gname.maxLength = 24; gname.placeholder = "e.g. Family Mexico";
+  const goal = el("input"); goal.type = "number"; goal.min = 100; goal.step = 100; goal.value = 5000;
+  const date = el("input"); date.type = "date";
+  cb.append(lab("Group name", gname), lab("Team goal (points)", goal), lab("Trip date (optional)", date), button("Start group", async () => {
+    if (!gname.value.trim()) return boardNote("Give the group a name.", "bad");
+    boardNote("Starting your group…");
+    try { await ensureHello(); const r = await boardCall({action:"create", groupName:gname.value.trim(), goal:goal.value, goalDate:date.value}); boardGroup = r.code; pendingJoin = ""; await syncBoard(); renderBoard(false); boardNote(`✓ Group started. Code: ${r.code}. Tap 📤 Invite to send it.`, "ok"); } catch(e) { boardNote(e.message, "bad"); }
+  }, "btn"));
+  c.append(cb, el("div", "s muted", "Team goal = points everyone earns together after the group starts. 5,000 is about 3 weeks of nightly practice for a family of six."));
+  box.append(c);
+  if (hasGroups) box.append(el("div", "btns"), button("← Back to my board", () => { pendingJoin = ""; renderBoard(false); }, "btn ghost"));
+}
+function drawBoard(box, data, stale){
+  const g = data.group, wk = weekKey(Date.now()), lw = lastWeekKey(), days = weekDays(wk), ldays = weekDays(lw);
+  const sum = (o, ds) => ds.reduce((a,d) => a + ((o||{})[d] || 0), 0);
+  const rows = data.members.map(m => { const s = m.stats || {}, w = (s.weeks||{})[wk] || {}, l = (s.weeks||{})[lw] || {};
+    return {name:m.name, me:m.me, s, pts:Math.round(sum(s.daily, days)), mins:Math.round(sum(s.mins, days)), tries:sum(s.tries, days), lastPts:Math.round(sum(s.daily, ldays)),
+      accent: w.accent ?? null, dialect: w.dialect ?? null, streak: streakFrom(s.tries), improved: (w.accent != null && l.accent != null) ? w.accent - l.accent : null}; });
+  const head = el("div", "bar"); head.style.justifyContent = "space-between";
+  const ttl = el("div"); ttl.append(el("h3", "", g.name), el("div", "muted", `Code ${g.code} · ${rows.length} ${rows.length===1?"person":"people"}`));
+  head.append(ttl, button("📤 Invite", () => invite(g), "btn small"));
+  box.append(head);
+  // team goal
+  const since = dayKey(g.created_at), team = Math.round(rows.reduce((a,r) => a + Object.entries(r.s.daily||{}).filter(([d]) => d >= since).reduce((x,[,v]) => x+v, 0), 0));
+  const gt = el("div", "tile"); gt.style.marginTop = "10px"; gt.append(el("div", "k", "Team goal"), el("div", "v", `${team.toLocaleString()} / ${g.goal.toLocaleString()}`), meter(Math.min(100, Math.round(100*team/g.goal))));
+  const left = g.goal_date ? Math.ceil((new Date(g.goal_date+"T00:00:00") - new Date())/DAY) : null;
+  gt.append(el("div", "s", team >= g.goal ? "🎉 Goal reached! Set a bigger one for the next trip." : `${(g.goal-team).toLocaleString()} points to go` + (left != null ? (left > 0 ? ` · ${left} days until the trip` : " · trip time!") : "")));
+  box.append(gt);
+  // this week
+  box.append(el("h3", "", "This week (Sunday to Saturday)"));
+  const ranked = rows.slice().sort((a,b) => b.pts - a.pts || b.mins - a.mins), list = el("div", "rows"), medals = ["🥇","🥈","🥉"];
+  ranked.forEach((r,i) => { const row = el("div", "row" + (r.me ? " me" : "")); const t = el("div", "t"); t.style.flex = "1"; t.append(el("b", "", `${r.pts > 0 ? (medals[i] || "  ") : "  "} ${r.name}${r.me ? " (you)" : ""}`), el("small", "", `${r.mins} min · ${r.tries} tries` + (r.streak ? ` · 🔥 ${r.streak}-day streak` : ""))); const v = el("div", "pts", r.pts + " pts"); row.append(t, v); list.append(row); });
+  box.append(list);
+  // categories
+  const best = (key, ok) => rows.filter(r => r[key] != null && ok(r[key])).sort((a,b) => b[key] - a[key])[0];
+  const cats = [["🏋️ Most practice", best("mins", v => v > 0), r => r.mins + " min"], ["🗣️ Best accent", best("accent", () => true), r => r.accent + " / 100"], ["🇲🇽 Most local", best("dialect", () => true), r => r.dialect + " / 100"], ["🔥 Longest streak", best("streak", v => v > 0), r => r.streak + (r.streak===1 ? " day" : " days")], ["📈 Most improved", best("improved", v => v > 0), r => "+" + r.improved + " accent"]];
+  const tiles = el("div", "tiles");
+  for (const [k, r, fmt] of cats) tiles.append(tile(k, r ? r.name : "—", r ? fmt(r) : "Nobody yet"));
+  box.append(tiles);
+  const champ = rows.filter(r => r.lastPts > 0).sort((a,b) => b.lastPts - a.lastPts)[0];
+  if (champ) box.append(el("p", "champ", `👑 Last week's champion: ${champ.name} with ${champ.lastPts} points.`));
+  // helping each other
+  const help = helpTips(rows);
+  box.append(el("h3", "", "Help each other"));
+  if (help.length) for (const h of help) box.append(el("div", "pointer", h));
+  else box.append(el("p", "muted", "Once everyone has a few tries in, Sofía matches who's strong at what, so you know who to ask."));
+  // footer
+  const f = el("div", "btns");
+  f.append(button("🔄 Refresh", () => renderBoard(false), "btn small"), button("Leave group", async () => { if (!confirm(`Leave “${g.name}”? Your practice history stays on this phone.`)) return; try { await boardCall({action:"leave", code:g.code}); boardGroup = null; renderBoard(false); } catch(e) { boardNote(e.message, "bad"); } }, "btn small ghost"));
+  box.append(f);
+  box.append(el("p", "muted", (stale ? "Showing the last saved board. " : "") + "Updated " + new Date(data.fetched || Date.now()).toLocaleString([], {weekday:"short", hour:"numeric", minute:"2-digit"}) + ". Scores go up a few seconds after each try."));
+  const how = el("details"); how.append(el("summary", "", "How points work"), el("p", "muted", "1 point a try (first 40 a day). +2 for 75% or better, +4 for 100% (3 times per phrase a day, so repeating an easy one won't run up the score). +3 the first time a phrase reaches 75%. +10 for clearing a Needs Work phrase. +5 for any day with 5+ tries. Practice minutes: 30 seconds a try plus the time between tries when they're under 5 minutes apart."));
+  box.append(how);
+}
+function helpTips(rows){
+  const me = rows.find(r => r.me), out = []; if (!me) return out;
+  const rate = (s, k, min=3) => s.sounds && s.sounds[k] && s.sounds[k].n >= min ? s.sounds[k].hit / s.sounds[k].n : null;
+  const pct = x => Math.round(100*x) + "%";
+  for (const S of SOUNDS) {
+    const mine = rate(me.s, S.k); if (mine == null || mine >= 0.6) continue;
+    const pro = rows.filter(r => !r.me && rate(r.s, S.k, 5) >= 0.8).sort((a,b) => rate(b.s, S.k) - rate(a.s, S.k))[0];
+    if (pro) out.push(`Ask ${pro.name} about the ${S.label}: they get it ${pct(rate(pro.s, S.k))} of the time (you: ${pct(mine)}).`);
+  }
+  for (const es of me.s.needs || []) { const pro = rows.find(r => !r.me && (r.s.phrases||[]).some(x => x.es === es && x.r >= 75)); if (pro) out.push(`${pro.name} has “${es}” down. Ask them to say it for you.`); }
+  for (const r of rows.filter(r => !r.me)) for (const S of SOUNDS) { const theirs = rate(r.s, S.k), mine = rate(me.s, S.k, 5); if (theirs != null && theirs < 0.6 && mine != null && mine >= 0.8) out.push(`You could help ${r.name} with the ${S.label}: they're at ${pct(theirs)}, you're at ${pct(mine)}.`); }
+  return out.slice(0, 6);
+}
+async function invite(g){
+  const link = location.origin + location.pathname + "?join=" + g.code;
+  const text = `Join my Sofía Spanish group “${g.name}”! Open ${link} (or type code ${g.code} on the 🏆 Board tab).`;
+  if (navigator.share) { try { await navigator.share({title:"Join my Sofía group", text}); return; } catch(e) { if (e.name === "AbortError") return; } }
+  try { await navigator.clipboard.writeText(text); boardNote("✓ Invite copied. Paste it into a text or WhatsApp.", "ok"); } catch(_) { boardNote("Send this code: " + g.code + "  ·  link: " + link, "ok"); }
+}
+try { const j = new URLSearchParams(location.search).get("join"); if (j) { pendingJoin = j.toUpperCase().replace(/[^A-Z0-9]/g, "").slice(0,8); history.replaceState(null, "", location.pathname); } } catch(_){}
+
 /* ---------- start-up ---------- */
 renderList();
 renderToday();
@@ -807,10 +1248,13 @@ function renderDict(){
 }
 $("#dict-q").addEventListener("input", renderDict);
 renderCats();
-try { const t = localStorage.getItem("sofia-tab"); if (["practise","local","progress","dict"].includes(t)) setTab(t); } catch(_){}
+if (!BOARD_API) document.querySelector('.tab[data-tab="board"]').hidden = true;   // the family board appears once its server is switched on
+try { const t = localStorage.getItem("sofia-tab"); if (pendingJoin && BOARD_API) setTab("board"); else if (["practise","local","progress","dict"].concat(BOARD_API ? ["board"] : []).includes(t)) setTab(t); } catch(_){}
 
 /* coming back to the app after 20+ minutes shows "Since last time" */
 maybeReview(false);
+queueSync(1500);
+addEventListener("online", () => queueSync(1000));
 document.addEventListener("visibilitychange", () => { const p = peek(); if (!p) return; if (document.hidden) { p.lastSeen = new Date().toISOString(); saveProg(); } else maybeReview(false); });
 
 /* install + offline: lessons and the page work without a signal; listening needs internet */
