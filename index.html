@@ -77,6 +77,48 @@ select,input[type=text],input[type=number],input[type=date]{font:inherit;color:i
 .tab[aria-selected="true"]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
 .offline-badge{margin-left:auto;font-family:var(--mono);font-size:12px;color:var(--jungle)}
 [data-panel]{display:none}
+[data-panel][hidden]{display:none!important}
+body[data-tab="learn"] [data-panel="learn"],body[data-tab="talk"] [data-panel="talk"]{display:block}
+/* 📚 Learn */
+.step{display:flex;justify-content:space-between;align-items:center;gap:12px;border:1px solid var(--line);border-radius:12px;padding:10px 12px;background:var(--bg);margin-top:8px}
+.step .t{display:flex;flex-direction:column;min-width:0}.step .t small{color:var(--muted)}
+.step.done{border-color:var(--jungle)}.step.done b{color:var(--jungle)}
+#learn-body h3{margin-top:18px}
+.lcard{border:1px solid var(--line);border-radius:14px;padding:12px 14px;margin-top:12px;background:var(--bg)}
+.lcard p{margin:6px 0 8px}
+.ex{display:flex;gap:10px;align-items:baseline;width:100%;text-align:left;border:0;border-top:1px dashed var(--line);background:none;padding:8px 2px;font:inherit;color:inherit;cursor:pointer}
+.ex b{font-family:var(--display);font-size:19px}.ex small{color:var(--muted);margin-left:auto;text-align:right}
+.qbox{margin-top:12px}.qcount{margin-top:10px;font-family:var(--mono);font-size:12px;letter-spacing:.08em}
+.qprompt{font-family:var(--display);font-size:22px;font-weight:700;margin:8px 0 12px;line-height:1.2}
+.opts{display:flex;flex-wrap:wrap;gap:8px;margin:10px 0}
+.opt{border:2px solid var(--line);border-radius:12px;padding:10px 14px;font:inherit;font-weight:700;font-size:17px;background:var(--panel);color:inherit;cursor:pointer}
+.opts.syls .opt{font-family:var(--mono);font-size:20px;min-width:56px}
+.opt.right{border-color:var(--jungle);background:color-mix(in srgb,var(--jungle) 18%,transparent)}
+.opt.wrong{border-color:var(--rose);background:color-mix(in srgb,var(--rose) 15%,transparent)}
+.opt.chosen{border-color:var(--sea)}
+.built{display:flex;flex-wrap:wrap;gap:8px;min-height:52px;padding:8px;border:2px dashed var(--line);border-radius:12px}
+.nudge{border:2px solid var(--gold)}
+/* 💬 Talk */
+#talk-pick{margin-top:10px}
+.toggles{display:flex;flex-wrap:wrap;gap:6px 16px;margin-top:10px;font-size:14px;color:var(--muted)}
+.chat{display:flex;flex-direction:column;gap:8px;margin-top:14px;max-height:52vh;overflow-y:auto;padding:2px}
+.chat:empty{display:none}
+.bub{max-width:85%;border-radius:16px;padding:9px 13px;position:relative}
+.bub .who{font-size:12px;font-family:var(--mono);color:var(--muted);text-transform:uppercase;letter-spacing:.06em}
+.bub .es{font-family:var(--display);font-size:19px;font-weight:700}
+.bub .en{font-size:14px;color:var(--muted)}
+.bub.her{align-self:flex-start;background:var(--bg);border:1px solid var(--line);cursor:pointer;padding-right:44px}
+.bub.me{align-self:flex-end;background:var(--sea);color:#fff}
+.bub.sys{align-self:center;max-width:100%;text-align:center;background:none;padding:2px}
+.bub .mini{position:absolute;top:8px;right:8px;border:0;background:none;font-size:18px;cursor:pointer}
+#talk-hint{margin-top:10px;border:2px solid var(--gold);border-radius:14px;padding:10px 12px;display:flex;flex-direction:column;gap:4px}
+#talk-hint[hidden]{display:none}
+#talk-hint b{font-family:var(--display);font-size:20px}
+.typebar{display:flex;gap:8px;margin-top:10px}.typebar input{flex:1;min-width:0}
+/* voice */
+#voice-box summary{font-family:var(--display);font-size:19px;font-weight:700;cursor:pointer}
+#voice-box label{display:flex;flex-direction:column;gap:4px;margin-top:12px;font-size:13px;color:var(--muted)}
+#voice-box select,#voice-box input[type=range]{width:100%}
 body[data-tab="practise"] [data-panel="practise"],body[data-tab="local"] [data-panel="local"],body[data-tab="progress"] [data-panel="progress"],body[data-tab="dict"] [data-panel="dict"],body[data-tab="board"] [data-panel="board"]{display:block}
 #dict-q{width:100%;font:inherit;font-size:18px;color:inherit;border:2px solid var(--sea);border-radius:14px;padding:12px 14px;background:var(--panel)}
 .chips{display:flex;gap:6px;overflow-x:auto;padding:10px 0 4px;-webkit-overflow-scrolling:touch}
@@ -145,14 +187,16 @@ textarea{width:100%;min-height:160px;font-family:var(--mono);font-size:12px;bord
   <header>
     <div class="muted" style="font-family:var(--mono);font-size:12px;letter-spacing:.12em;text-transform:uppercase">Español mexicano · voice practice</div>
     <h1>Sofía <span>Voice Coach</span></h1>
-    <p class="muted" style="margin:4px 0 0">Pick a phrase, press 🎤 and say it. Sofía checks every word with a Mexican-Spanish ear, keeps your scores, and tells you what to work on next.</p>
+    <p class="muted" style="margin:4px 0 0">📚 Learn tonight's grammar, 🎤 say the phrases (Sofía checks every word with a Mexican-Spanish ear), then 💬 talk with her.</p>
   </header>
   <div class="warn" id="warn" hidden></div>
 
   <div class="card review" id="review" hidden></div>
 
   <div class="tabs" role="tablist">
+    <button class="tab" role="tab" data-tab="learn" aria-selected="false" type="button">📚 Learn</button>
     <button class="tab" role="tab" data-tab="practise" aria-selected="true" type="button">🎤 Practise</button>
+    <button class="tab" role="tab" data-tab="talk" aria-selected="false" type="button">💬 Talk</button>
     <button class="tab" role="tab" data-tab="local" aria-selected="false" type="button">🇲🇽 Say it local</button>
     <button class="tab" role="tab" data-tab="progress" aria-selected="false" type="button">📈 Progress</button>
     <button class="tab" role="tab" data-tab="board" aria-selected="false" type="button">🏆 Board</button>
@@ -167,6 +211,39 @@ textarea{width:100%;min-height:160px;font-family:var(--mono);font-size:12px;bord
     <div class="dict-list" id="dict-list"></div>
   </div>
 
+  <div class="card" data-panel="learn" id="learn-top"></div>
+  <div class="card" data-panel="learn" id="learn-body"></div>
+
+  <div class="card" data-panel="talk">
+    <h2 id="talk-title">💬 Talk with Sofía</h2>
+    <p class="muted" style="margin:4px 0 0">Pick a conversation. Sofía talks, you answer out loud (or type), and it keeps going. ★ = goes with tonight's lesson. Tap her bubble to show or hide the English.</p>
+    <div class="chips" id="talk-pick"></div>
+    <div class="toggles">
+      <label><input type="checkbox" id="talk-en" checked> Show English</label>
+      <label><input type="checkbox" id="talk-slow"> Talk slower</label>
+      <label><input type="checkbox" id="talk-hands"> Hands-free (mic opens after she talks)</label>
+    </div>
+    <div class="chat" id="talk-chat" aria-live="polite"></div>
+    <div id="talk-hint" hidden></div>
+    <div id="talk-play" hidden>
+      <div class="btns">
+        <button class="btn mic" id="talk-mic" type="button">🎤 Answer</button>
+        <button class="btn ghost" id="talk-hintb" type="button">💡 Hint</button>
+        <button class="btn ghost" id="talk-again" type="button">🔊 Again, slower</button>
+        <button class="btn ghost" id="talk-skip" type="button">⏭ Skip</button>
+        <button class="btn ghost" id="talk-stop" type="button">🏁 I'm done</button>
+      </div>
+      <div class="typebar"><input type="text" id="talk-type" placeholder="…or type your answer in Spanish" autocomplete="off" aria-label="Type your answer"><button class="btn small" id="talk-send" type="button">Send</button></div>
+    </div>
+    <div class="say-status" id="talk-status" role="status" aria-live="polite"></div>
+    <div id="talk-end"></div>
+  </div>
+
+  <div class="card nudge" data-panel="practise" id="learn-nudge" hidden>
+    <b>📚 Grammar first</b>
+    <p id="learn-nudge-t" style="margin:6px 0 0"></p>
+    <div class="btns"><button class="btn" id="learn-nudge-go" type="button">📚 Go to Learn</button><button class="btn ghost" id="learn-nudge-skip" type="button">Skip for tonight</button></div>
+  </div>
   <div class="card any" data-panel="practise">
     <h2>✍️ Say anything</h2>
     <p class="muted" style="margin:2px 0 10px">Type it in English or Spanish, names and all. Sofía turns it into Mexican Spanish, says it, and checks you.</p>
@@ -224,6 +301,14 @@ textarea{width:100%;min-height:160px;font-family:var(--mono);font-size:12px;bord
 
   <div class="card" data-panel="board"><div id="board"></div><div class="say-status" id="board-status" role="status" aria-live="polite"></div></div>
 
+  <details class="card" id="voice-box">
+    <summary>🗣 Sofía's voice</summary>
+    <label>Voice<select id="voice-sel"></select></label>
+    <label>Speed <span id="voice-rate-v"></span><input type="range" id="voice-rate" min="0.6" max="1.3" step="0.05" value="1"></label>
+    <label>Pitch (lower = deeper) <span id="voice-pitch-v"></span><input type="range" id="voice-pitch" min="0.6" max="1.5" step="0.05" value="1"></label>
+    <div class="btns"><button class="btn small" id="voice-test" type="button">🔊 Test</button><button class="btn ghost small" id="voice-reset" type="button">Reset</button></div>
+    <p class="muted" id="voice-note" style="font-size:13px"></p>
+  </details>
   <p class="version" id="ver"></p>
   <p class="muted" style="font-size:13px">Voice: <span id="voice-name">loading…</span>. The dictionary, lessons, scores and 🔊 work with no signal once the app has been opened online (🔊 needs a Spanish voice on the phone). 🎤 checking uses your phone's speech recognition, which normally needs data. Your scores are saved on this phone only. To install: Chrome menu ⋮ → <b>Add to Home screen</b> / <b>Install app</b>.</p>
 </div>
@@ -344,22 +429,45 @@ function tipsFor(words){
 }
 
 /* ---------- voice out ---------- */
-const APP_VERSION = "2026-11-02c";
+const APP_VERSION = "2026-11-05a";
 /* every button answers right where you tapped: no silent failures */
 let toastTimer = null;
 function note(msg, kind="", where="#say-status"){ const s = $(where); if (!s) return; s.textContent = msg; s.className = "say-status" + (kind ? " "+kind : ""); if (where==="#toast") { clearTimeout(toastTimer); toastTimer = setTimeout(()=>{ s.textContent = ""; }, kind==="bad" ? 7000 : 3500); } }
 let speakWhere = "#say-status";   // the status line of the tab you're on
 const HAS_TTS = "speechSynthesis" in window && "SpeechSynthesisUtterance" in window;
-let VOICE = null;
-function pickVoice(){ if (!HAS_TTS) { $("#voice-name").textContent = "this browser can't speak"; return; } const vs = speechSynthesis.getVoices(); VOICE = vs.find(v=>/es[-_]MX/i.test(v.lang)) || vs.find(v=>/es[-_](US|419)/i.test(v.lang)) || vs.find(v=>/^es/i.test(v.lang)) || null; $("#voice-name").textContent = VOICE ? `${VOICE.name} (${VOICE.lang})` : (vs.length ? "no Spanish voice found on this phone (see Settings → Text-to-speech → Install voice data → Español)" : "phone default voice"); }
-if (HAS_TTS) { speechSynthesis.onvoiceschanged = pickVoice; pickVoice(); }
+let VOICE = null, VSET = {name:"", rate:1, pitch:1};
+try { VSET = Object.assign(VSET, JSON.parse(localStorage.getItem("sofia-voice") || "{}")); } catch(_){}
+const REGION = {MX:"Mexico 🇲🇽", US:"US Spanish", "419":"Latin America", ES:"Spain", AR:"Argentina", CO:"Colombia", CL:"Chile", PE:"Peru", DO:"Dominican Rep."};
+const voiceRank = v => /es[-_]MX/i.test(v.lang) ? 0 : /es[-_](US|419)/i.test(v.lang) ? 1 : /es[-_]ES/i.test(v.lang) ? 3 : 2;
+function voiceGender(v){ const n = v.name.toLowerCase(); if (/female|mujer|paulina|sabina|dalia|m[oó]nica|helena|laura|marisol|ang[eé]lica|elvira|luc[ií]a|elena|isabela|camila|valentina|renata|beatriz/.test(n)) return " ♀"; if (/\bmale\b|hombre|juan|jorge|ra[uú]l|pablo|diego|carlos|enrique|alvaro|gerardo|tom[aá]s/.test(n)) return " ♂"; return ""; }
+function pickVoice(){
+  if (!HAS_TTS) { $("#voice-name").textContent = "this browser can't speak"; $("#voice-note").textContent = "This browser can't read aloud. Open Sofía in Chrome."; return; }
+  const vs = speechSynthesis.getVoices(), es = vs.filter(v=>/^es/i.test(v.lang)).sort((a,b)=>voiceRank(a)-voiceRank(b) || a.name.localeCompare(b.name));
+  VOICE = es.find(v=>v.name===VSET.name) || es[0] || null;
+  $("#voice-name").textContent = VOICE ? `${VOICE.name} (${VOICE.lang})` : (vs.length ? "no Spanish voice found on this phone (see Settings → Text-to-speech → Install voice data → Español)" : "phone default voice");
+  const sel = $("#voice-sel"); sel.replaceChildren();
+  if (!es.length) sel.append(new Option("Phone's default voice", ""));
+  for (const v of es) { const r = (v.lang.split(/[-_]/)[1] || "").toUpperCase(); sel.append(new Option(`${v.name}${voiceGender(v)} · ${REGION[r] || v.lang}${v.localService === false ? " · needs signal" : ""}`, v.name)); }
+  if (VOICE) sel.value = VOICE.name;
+  $("#voice-rate").value = VSET.rate; $("#voice-pitch").value = VSET.pitch; voiceLabels();
+  $("#voice-note").textContent = `This phone offers ${es.length} Spanish voice${es.length===1?"":"s"}${es.length ? "; Mexico is listed first" : ""}. ♀/♂ shows only when the phone's voice name says so. Pitch makes any voice higher or deeper. More voices: phone Settings → Text-to-speech → Install voice data → Spanish (unverified path; it differs by phone).`;
+}
+function voiceLabels(){ $("#voice-rate-v").textContent = "×" + Number(VSET.rate).toFixed(2); $("#voice-pitch-v").textContent = "×" + Number(VSET.pitch).toFixed(2); }
+function saveVoice(){ try { localStorage.setItem("sofia-voice", JSON.stringify(VSET)); } catch(_){} voiceLabels(); }
+if (HAS_TTS) { speechSynthesis.onvoiceschanged = pickVoice; }
+pickVoice();
+$("#voice-sel").onchange = () => { VSET.name = $("#voice-sel").value; VOICE = speechSynthesis.getVoices().find(v=>v.name===VSET.name) || VOICE; $("#voice-name").textContent = VOICE ? `${VOICE.name} (${VOICE.lang})` : "phone default voice"; saveVoice(); const w = speakWhere; speakWhere = "#toast"; speak("¡Hola! Soy Sofía. ¿Cómo está?", 0.9).then(() => speakWhere = w); };
+$("#voice-rate").oninput = () => { VSET.rate = parseFloat($("#voice-rate").value); saveVoice(); };
+$("#voice-pitch").oninput = () => { VSET.pitch = parseFloat($("#voice-pitch").value); saveVoice(); };
+$("#voice-test").onclick = () => { const w = speakWhere; speakWhere = "#toast"; speak("¡Hola! Soy Sofía. ¿Cómo está?", 0.9).then(() => speakWhere = w); };
+$("#voice-reset").onclick = () => { VSET = {name:"", rate:1, pitch:1}; saveVoice(); pickVoice(); note("Voice reset to the phone's Mexican Spanish.", "ok", "#toast"); };
 function speak(text, rate=0.9){
   const say = (m,k) => note(m, k, speakWhere);
   return new Promise(res => {
     if (!HAS_TTS) { say("This browser can't read aloud. Open Sofía in Chrome.", "bad"); return res(); }
     try { speechSynthesis.cancel(); speechSynthesis.resume(); } catch(_){}
     let u;
-    try { u = new SpeechSynthesisUtterance(text); u.lang = VOICE?.lang || "es-MX"; u.rate = rate; }
+    try { u = new SpeechSynthesisUtterance(text); u.lang = VOICE?.lang || "es-MX"; u.rate = Math.min(2, rate * (VSET.rate || 1)); u.pitch = VSET.pitch || 1; }
     catch (err) { say("Couldn't prepare the voice (" + (err.message||err) + ").", "bad"); return res(); }
     try { if (VOICE) u.voice = VOICE; } catch(_) { /* odd voice object: fall back to the phone's default Spanish */ }
     let started = false;
@@ -376,10 +484,12 @@ let tabNow = "practise";
 function setTab(name){
   tabNow = name; document.body.dataset.tab = name;
   document.querySelectorAll(".tab").forEach(t => t.setAttribute("aria-selected", t.dataset.tab===name));
-  speakWhere = name==="local" ? "#local-status" : name==="practise" ? "#say-status" : "#toast";   // Progress and Dictionary use the pop-up line
+  speakWhere = name==="local" ? "#local-status" : name==="practise" ? "#say-status" : name==="talk" ? "#talk-status" : "#toast";   // Progress and Dictionary use the pop-up line
   if (name==="dict") renderDict();
   if (name==="progress") renderProgress();
   if (name==="board") renderBoard();
+  if (name==="learn" && typeof renderLearn === "function") renderLearn();
+  if (name==="talk" && typeof renderTalkPicker === "function") renderTalkPicker();
   if (name==="local" && !localItem) nextLocal();
   try { localStorage.setItem("sofia-tab", name); } catch(_){}
 }
@@ -1249,7 +1359,7 @@ function renderDict(){
 $("#dict-q").addEventListener("input", renderDict);
 renderCats();
 if (!BOARD_API) document.querySelector('.tab[data-tab="board"]').hidden = true;   // the family board appears once its server is switched on
-try { const t = localStorage.getItem("sofia-tab"); if (pendingJoin && BOARD_API) setTab("board"); else if (["practise","local","progress","dict"].concat(BOARD_API ? ["board"] : []).includes(t)) setTab(t); } catch(_){}
+try { const t = localStorage.getItem("sofia-tab"); if (pendingJoin && BOARD_API) setTab("board"); else if (["learn","practise","talk","local","progress","dict"].concat(BOARD_API ? ["board"] : []).includes(t)) setTab(t); } catch(_){}
 
 /* coming back to the app after 20+ minutes shows "Since last time" */
 maybeReview(false);
@@ -1268,5 +1378,7 @@ if ("serviceWorker" in navigator) {
 function netNote(){ if (!navigator.onLine) { $("#warn").hidden = false; $("#warn").textContent = "No signal: you can read lessons, hear them (if your phone has a Spanish voice) and see your scores, but 🎤 needs internet."; } else if ($("#warn").textContent.startsWith("No signal")) $("#warn").hidden = true; }
 addEventListener("online", netNote); addEventListener("offline", netNote); netNote();
 </script>
+<script src="learn.js"></script>
+<script src="talk.js"></script>
 </body>
 </html>
