@@ -152,7 +152,7 @@ async function herSays(line){
   if (talk && talk.node !== "END" && $("#talk-hands").checked) setTimeout(() => talk && $("#talk-mic").click(), 300);
 }
 const talkRate = () => $("#talk-slow").checked ? 0.7 : 0.9;
-function currentHint(){ const n = talk && talk.script.nodes[talk.node]; return n ? (talk.hintNext || val(n.hint, talk.vars)) : null; }
+function currentHint(){ if (talk && talk.ai) return talk.hintNext; const n = talk && talk.script.nodes[talk.node]; return n ? (talk.hintNext || val(n.hint, talk.vars)) : null; }
 function showHint(open){
   const h = currentHint(), box = $("#talk-hint"); box.replaceChildren(); box.hidden = !open || !h;
   if (!open || !h) return;
@@ -167,6 +167,7 @@ function grabName(raw){
 function userSaid(alts){
   if (!talk || talk.node === "END") return;
   const texts = alts.map(a => a.t).filter(Boolean); if (!texts.length) return;
+  if (talk.ai) return aiTurn(texts[0]);
   const n = talk.script.nodes[talk.node];
   // which alternative the recognizer heard matches something Sofía expects
   let hit = null, said = talkNorm(texts[0]), raw = texts[0];
@@ -194,6 +195,45 @@ function userSaid(alts){
   const n2 = talk.script.nodes[next];
   herSays(reply && n2.say ? {es:reply.es + " " + val(n2.say, talk.vars).es, en:reply.en + " " + val(n2.say, talk.vars).en} : (reply || val(n2.say, talk.vars)));
 }
+/* ✨ Free chat: Sofía answers anything, through Workers AI on her server (needs a signal). */
+function startAi(){
+  if (!navigator.onLine) { note("Free chat needs a signal. The other conversations work offline.", "bad", "#talk-status"); return; }
+  const n = learnNight(), L = LESSONS.find(x => x.n === n);
+  talk = {ai:true, script:{id:"ai", title:"Free chat", who:"Sofía", nodes:{}}, node:"ai", vars:{}, turns:0, misses:0, hist:[], busy:false,
+          topic: L ? L.title : "plática del día", lesson: L ? (L.phrases || []).map(p => p.es).join("; ") : "",
+          hintNext:{es:"Muy bien, gracias. ¿Y usted?", en:"Very well, thanks. And you?"}};
+  $("#talk-chat").replaceChildren(); $("#talk-end").replaceChildren(); $("#talk-play").hidden = false;
+  $("#talk-title").textContent = "💬 Free chat with Sofía (AI, beta)";
+  renderTalkPicker();
+  talkLine("", "", "Say anything in Spanish, or in English if you're stuck. Sofía answers in Mexican Spanish and ✏️ marks a fix. The AI can slip now and then; the other conversations are checked word by word.", "sys");
+  const open = {es:`¡${GREET()}! ¿Cómo está hoy?`, en:`${GREET_EN1()}! How are you today?`};
+  talk.hist.push({who:"her", es:open.es});
+  herSays(open);
+}
+async function aiTurn(raw){
+  const said = talkNorm(raw);
+  talkLine("", raw, "", "me");
+  if (matchAny(REPEAT, said) && said.trim().split(" ").length <= 3 && talk.lastLine) { talkLine(talk.script.who, "Claro. " + talk.lastLine.es, "Of course (slower): " + talk.lastLine.en, "her"); speak(talk.lastLine.es, 0.6); return; }
+  if (talk.busy) return;
+  talk.busy = true; talk.hist.push({who:"me", es:raw.slice(0, 300)});
+  const me = talk, thinking = talkLine("", "", "Sofía is thinking…", "sys");
+  try {
+    if (!navigator.onLine) throw new Error("Free chat needs a signal. The other conversations work offline.");
+    const ctl = new AbortController(), t = setTimeout(() => ctl.abort(), 20000);
+    let r; try { r = await fetch(AI_BASE + "/chat", {method:"POST", headers:{"Content-Type":"application/json"}, body:JSON.stringify({history:me.hist.slice(-12), topic:me.topic, lesson:me.lesson}), signal:ctl.signal}); } finally { clearTimeout(t); }
+    const d = await r.json().catch(() => ({}));
+    if (!r.ok) throw new Error(d.error || "Couldn't reach Sofía (" + r.status + ").");
+    thinking.remove(); if (talk !== me) return;
+    me.turns++; me.hist.push({who:"her", es:d.es});
+    me.hintNext = d.suggest ? {es:d.suggest, en:"(something you could say)"} : null;
+    if (d.tip) talkLine("", "", "✏️ " + d.tip, "sys tipline");
+    me.busy = false;
+    await herSays({es:d.es, en:d.en});
+  } catch (e) {
+    thinking.remove(); me.hist.pop(); me.busy = false;
+    if (talk === me) talkLine("", "", e.name === "AbortError" ? "Sofía took too long to answer. Say it again." : (e.message || "Couldn't reach Sofía."), "sys");
+  }
+}
 function endTalk(finished){
   if (!talk) return;
   const s = talk.script, rec = TALKLOG[learnWho()] = TALKLOG[learnWho()] || {};
@@ -212,6 +252,7 @@ function endTalk(finished){
 function renderTalkPicker(){
   const box = $("#talk-pick"), n = learnNight(), rec = TALKLOG[learnWho()] || {}; box.replaceChildren();
   const sorted = TALKS.slice().sort((a,b) => (b.nights.includes(n)) - (a.nights.includes(n)));
+  if (typeof AI_BASE === "string" && AI_BASE) { const b = button("✨ Free chat (AI, beta)" + (rec.ai && rec.ai.best ? " ✓" : ""), startAi, ""); b.setAttribute("aria-pressed", !!(talk && talk.ai)); box.append(b); }
   for (const t of sorted) {
     const r = rec[t.id], b = button((r && r.done ? "✓ " : "") + t.title + (t.nights.includes(n) ? " ★" : ""), () => startTalk(t.id), "");
     b.setAttribute("aria-pressed", talk && talk.script.id === t.id); box.append(b);
@@ -222,7 +263,7 @@ $("#talk-send").onclick = () => { const t = $("#talk-type").value.trim(); if (!t
 $("#talk-type").addEventListener("keydown", e => { if (e.key === "Enter") { e.preventDefault(); $("#talk-send").click(); } });
 $("#talk-hintb").onclick = () => { if (!talk) return; showHint($("#talk-hint").hidden); };
 $("#talk-again").onclick = () => { const last = talk && talk.lastLine; if (last) speak(last.es, 0.6); else note("Your turn first: say hello.", "", "#talk-status"); };
-$("#talk-skip").onclick = () => { if (!talk) return; const n = talk.script.nodes[talk.node], h = currentHint(); if (h) userSaid([{t:h.es, c:1}]); else { const e = n.expect[0]; talk.node = val(e.next, talk.vars, ""); if (talk.node === "END") endTalk(true); else herSays(val(e.reply, talk.vars, "")); } };
+$("#talk-skip").onclick = () => { if (!talk) return; const n = talk.script.nodes[talk.node], h = currentHint(); if (h) userSaid([{t:h.es, c:1}]); else if (talk.ai) note("Say anything, even “No sé” (I don't know).", "", "#talk-status"); else { const e = n.expect[0]; talk.node = val(e.next, talk.vars, ""); if (talk.node === "END") endTalk(true); else herSays(val(e.reply, talk.vars, "")); } };
 $("#talk-stop").onclick = () => endTalk(false);
 $("#talk-en").onchange = () => $("#talk-chat").querySelectorAll(".bub.her .en").forEach(e => e.hidden = !$("#talk-en").checked);
 try { $("#talk-hands").checked = localStorage.getItem("sofia-talk-hands") === "1"; $("#talk-en").checked = localStorage.getItem("sofia-talk-en") !== "0"; } catch(_){}

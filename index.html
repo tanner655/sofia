@@ -110,6 +110,7 @@ body[data-tab="learn"] [data-panel="learn"],body[data-tab="talk"] [data-panel="t
 .bub.her{align-self:flex-start;background:var(--bg);border:1px solid var(--line);cursor:pointer;padding-right:44px}
 .bub.me{align-self:flex-end;background:var(--sea);color:#fff}
 .bub.sys{align-self:center;max-width:100%;text-align:center;background:none;padding:2px}
+.bub.sys.tipline{align-self:flex-end;text-align:right;color:var(--gold);font-weight:600;max-width:85%}
 .bub .mini{position:absolute;top:8px;right:8px;border:0;background:none;font-size:18px;cursor:pointer}
 #talk-hint{margin-top:10px;border:2px solid var(--gold);border-radius:14px;padding:10px 12px;display:flex;flex-direction:column;gap:4px}
 #talk-hint[hidden]{display:none}
@@ -429,7 +430,7 @@ function tipsFor(words){
 }
 
 /* ---------- voice out ---------- */
-const APP_VERSION = "2026-11-05a";
+const APP_VERSION = "2026-11-05b";
 /* every button answers right where you tapped: no silent failures */
 let toastTimer = null;
 function note(msg, kind="", where="#say-status"){ const s = $(where); if (!s) return; s.textContent = msg; s.className = "say-status" + (kind ? " "+kind : ""); if (where==="#toast") { clearTimeout(toastTimer); toastTimer = setTimeout(()=>{ s.textContent = ""; }, kind==="bad" ? 7000 : 3500); } }
@@ -437,6 +438,11 @@ let speakWhere = "#say-status";   // the status line of the tab you're on
 const HAS_TTS = "speechSynthesis" in window && "SpeechSynthesisUtterance" in window;
 let VOICE = null, VSET = {name:"", rate:1, pitch:1};
 try { VSET = Object.assign(VSET, JSON.parse(localStorage.getItem("sofia-voice") || "{}")); } catch(_){}
+const AI_BASE = "https://sofia-board.sofia-board.workers.dev";
+const CLOUD_VOICES = [
+  {id:"estrella", label:"Estrella ♀ · Mexican"}, {id:"selena", label:"Selena ♀ · Latin American"}, {id:"celeste", label:"Celeste ♀ · Colombian"},
+  {id:"javier", label:"Javier ♂ · Mexican"}, {id:"sirio", label:"Sirio ♂ · Mexican, deep"}, {id:"aquila", label:"Aquila ♂ · Latin American"}];
+const cloudVoice = () => { const n = VSET.name || "cloud:estrella"; return n.startsWith("cloud:") && CLOUD_VOICES.some(v => "cloud:"+v.id === n) ? n.slice(6) : null; };
 const REGION = {MX:"Mexico 🇲🇽", US:"US Spanish", "419":"Latin America", ES:"Spain", AR:"Argentina", CO:"Colombia", CL:"Chile", PE:"Peru", DO:"Dominican Rep."};
 const voiceRank = v => /es[-_]MX/i.test(v.lang) ? 0 : /es[-_](US|419)/i.test(v.lang) ? 1 : /es[-_]ES/i.test(v.lang) ? 3 : 2;
 function voiceGender(v){ const n = v.name.toLowerCase(); if (/female|mujer|paulina|sabina|dalia|m[oó]nica|helena|laura|marisol|ang[eé]lica|elvira|luc[ií]a|elena|isabela|camila|valentina|renata|beatriz/.test(n)) return " ♀"; if (/\bmale\b|hombre|juan|jorge|ra[uú]l|pablo|diego|carlos|enrique|alvaro|gerardo|tom[aá]s/.test(n)) return " ♂"; return ""; }
@@ -444,24 +450,62 @@ function pickVoice(){
   if (!HAS_TTS) { $("#voice-name").textContent = "this browser can't speak"; $("#voice-note").textContent = "This browser can't read aloud. Open Sofía in Chrome."; return; }
   const vs = speechSynthesis.getVoices(), es = vs.filter(v=>/^es/i.test(v.lang)).sort((a,b)=>voiceRank(a)-voiceRank(b) || a.name.localeCompare(b.name));
   VOICE = es.find(v=>v.name===VSET.name) || es[0] || null;
-  $("#voice-name").textContent = VOICE ? `${VOICE.name} (${VOICE.lang})` : (vs.length ? "no Spanish voice found on this phone (see Settings → Text-to-speech → Install voice data → Español)" : "phone default voice");
+  $("#voice-name").textContent = cloudVoice() ? CLOUD_VOICES.find(v=>v.id===cloudVoice()).label.replace(" · ", " (") + ", online)" + (VOICE ? "; backup: " + VOICE.name : "") : VOICE ? `${VOICE.name} (${VOICE.lang})` : (vs.length ? "no Spanish voice found on this phone (see Settings → Text-to-speech → Install voice data → Español)" : "phone default voice");
   const sel = $("#voice-sel"); sel.replaceChildren();
-  if (!es.length) sel.append(new Option("Phone's default voice", ""));
-  for (const v of es) { const r = (v.lang.split(/[-_]/)[1] || "").toUpperCase(); sel.append(new Option(`${v.name}${voiceGender(v)} · ${REGION[r] || v.lang}${v.localService === false ? " · needs signal" : ""}`, v.name)); }
-  if (VOICE) sel.value = VOICE.name;
+  const g1 = document.createElement("optgroup"); g1.label = "✨ Sofía's voices (signal needed the first time each phrase plays)";
+  for (const v of CLOUD_VOICES) g1.append(new Option(v.label, "cloud:" + v.id));
+  const g2 = document.createElement("optgroup"); g2.label = "📱 Voices on this phone (work offline)";
+  if (!es.length) g2.append(new Option("Phone's default voice", "phone:"));
+  for (const v of es) { const r = (v.lang.split(/[-_]/)[1] || "").toUpperCase(); g2.append(new Option(`${v.name}${voiceGender(v)} · ${REGION[r] || v.lang}${v.localService === false ? " · needs signal" : ""}`, v.name)); }
+  sel.append(g1, g2);
+  sel.value = cloudVoice() ? "cloud:" + cloudVoice() : (VOICE ? VOICE.name : "phone:");
+  $("#voice-pitch").disabled = !!cloudVoice();
   $("#voice-rate").value = VSET.rate; $("#voice-pitch").value = VSET.pitch; voiceLabels();
-  $("#voice-note").textContent = `This phone offers ${es.length} Spanish voice${es.length===1?"":"s"}${es.length ? "; Mexico is listed first" : ""}. ♀/♂ shows only when the phone's voice name says so. Pitch makes any voice higher or deeper. More voices: phone Settings → Text-to-speech → Install voice data → Spanish (unverified path; it differs by phone).`;
+  $("#voice-note").textContent = `✨ Sofía's 6 voices are real recorded-quality voices (3 women, 3 men). Each phrase needs a signal the first time; after that it's saved on this phone and plays offline. If the online voice isn't reachable, the phone's own voice (${es.length} Spanish on this phone) takes over. Pitch only changes phone voices.`;
 }
 function voiceLabels(){ $("#voice-rate-v").textContent = "×" + Number(VSET.rate).toFixed(2); $("#voice-pitch-v").textContent = "×" + Number(VSET.pitch).toFixed(2); }
 function saveVoice(){ try { localStorage.setItem("sofia-voice", JSON.stringify(VSET)); } catch(_){} voiceLabels(); }
 if (HAS_TTS) { speechSynthesis.onvoiceschanged = pickVoice; }
 pickVoice();
-$("#voice-sel").onchange = () => { VSET.name = $("#voice-sel").value; VOICE = speechSynthesis.getVoices().find(v=>v.name===VSET.name) || VOICE; $("#voice-name").textContent = VOICE ? `${VOICE.name} (${VOICE.lang})` : "phone default voice"; saveVoice(); const w = speakWhere; speakWhere = "#toast"; speak("¡Hola! Soy Sofía. ¿Cómo está?", 0.9).then(() => speakWhere = w); };
+$("#voice-sel").onchange = () => { VSET.name = $("#voice-sel").value; fellBack = false; pickVoice(); saveVoice(); const w = speakWhere; speakWhere = "#toast"; speak("¡Hola! Soy Sofía. ¿Cómo está?", 0.9).then(() => speakWhere = w); };
 $("#voice-rate").oninput = () => { VSET.rate = parseFloat($("#voice-rate").value); saveVoice(); };
 $("#voice-pitch").oninput = () => { VSET.pitch = parseFloat($("#voice-pitch").value); saveVoice(); };
 $("#voice-test").onclick = () => { const w = speakWhere; speakWhere = "#toast"; speak("¡Hola! Soy Sofía. ¿Cómo está?", 0.9).then(() => speakWhere = w); };
-$("#voice-reset").onclick = () => { VSET = {name:"", rate:1, pitch:1}; saveVoice(); pickVoice(); note("Voice reset to the phone's Mexican Spanish.", "ok", "#toast"); };
-function speak(text, rate=0.9){
+$("#voice-reset").onclick = () => { VSET = {name:"", rate:1, pitch:1}; fellBack = false; saveVoice(); pickVoice(); note("Voice reset to Estrella (Mexican).", "ok", "#toast"); };
+/* Sofía's online voices (Cloudflare Workers AI): each clip is fetched once, then kept on the phone and works offline.
+   Anything that goes wrong (no signal the first time, daily free limit) falls back to the phone's own voice. */
+let clipAudio = null, fellBack = false;
+function stopClip(){ if (clipAudio) { try { clipAudio.pause(); } catch(_){} clipAudio = null; } }
+async function cloudClip(voice, text){
+  const key = new Request("https://sofia-voice.local/" + voice + "/" + encodeURIComponent(text));
+  let c = null; try { c = await caches.open("sofia-voice-v1"); const hit = await c.match(key); if (hit) return await hit.blob(); } catch(_){}
+  if (!navigator.onLine) throw new Error("offline");
+  const ctl = new AbortController(), t = setTimeout(() => ctl.abort(), 12000);
+  let r; try { r = await fetch(AI_BASE + "/tts", {method:"POST", headers:{"Content-Type":"application/json"}, body:JSON.stringify({voice, text}), signal:ctl.signal}); } finally { clearTimeout(t); }
+  if (!r.ok) { let m = ""; try { m = (await r.json()).error || ""; } catch(_){} const e = new Error(m || "voice error " + r.status); e.status = r.status; throw e; }
+  const blob = await r.blob();
+  try { if (c) await c.put(key, new Response(blob, {headers:{"Content-Type":"audio/mpeg"}})); } catch(_){}
+  return blob;
+}
+async function speak(text, rate=0.9){
+  const v = cloudVoice(), clean = String(text || "").replace(/\s+/g, " ").trim();
+  if (v && clean && clean.length <= 240) {
+    const say = (m,k) => note(m, k, speakWhere);
+    try {
+      stopClip(); try { if (HAS_TTS) speechSynthesis.cancel(); } catch(_){}
+      const blob = await cloudClip(v, clean), url = URL.createObjectURL(blob), a = new Audio(url); clipAudio = a;
+      a.playbackRate = Math.max(0.5, Math.min(2, rate / 0.9 * (VSET.rate || 1)));
+      await new Promise((res, rej) => { a.onended = res; a.onpause = res; a.onerror = () => rej(new Error("couldn't play the clip")); a.play().then(() => say("🔊 " + (rate < 0.7 ? "Slowly: " : "") + clean, "ok")).catch(rej); });
+      URL.revokeObjectURL(url); if (clipAudio === a) clipAudio = null; fellBack = false;
+      return;
+    } catch (e) {
+      if (e && e.name === "NotAllowedError") { say("Tap 🔊 to hear it (the phone blocked the sound until you tap).", "bad"); return; }
+      if (!fellBack) { fellBack = true; note(e && e.status === 429 ? (e.message || "Sofía's online voice is used up for today.") + " Using the phone's voice." : "Sofía's online voice isn't reachable (" + (e && e.message || "no signal") + "). Using the phone's voice.", "bad", "#toast"); }
+    }
+  }
+  return phoneSpeak(text, rate);
+}
+function phoneSpeak(text, rate=0.9){
   const say = (m,k) => note(m, k, speakWhere);
   return new Promise(res => {
     if (!HAS_TTS) { say("This browser can't read aloud. Open Sofía in Chrome.", "bad"); return res(); }
@@ -990,6 +1034,7 @@ function listen(btn, where, onAlts){
   if (!SR) { say("This browser can't listen. Open Sofía in Google Chrome.", "bad"); return; }
   if (rec) { rec.stop(); return; }
   try { if (HAS_TTS) speechSynthesis.cancel(); } catch(_){}
+  stopClip();
   let heardSomething = false;
   try {
     rec = new SR(); rec.lang = "es-MX"; rec.interimResults = false; rec.maxAlternatives = 5;
@@ -1118,7 +1163,7 @@ $("#local-mic").onclick = () => {
 };
 
 /* ---------- 🏆 family board: points, practice minutes, streaks, live leaderboard ---------- */
-const BOARD_DEFAULT = "";   // the scoreboard Worker's address (set once it's deployed)
+const BOARD_DEFAULT = AI_BASE;   // the scoreboard lives on the same Worker as Sofía's voices
 const BOARD_API = (() => { try { return localStorage.getItem("sofia-board-api") || BOARD_DEFAULT; } catch(_) { return BOARD_DEFAULT; } })();
 const dayKey = d => new Date(d).toLocaleDateString("en-CA");   // YYYY-MM-DD, phone's own time zone
 function weekKey(d){ const x = new Date(d); x.setHours(0,0,0,0); x.setDate(x.getDate() - x.getDay()); return dayKey(x); }   // weeks run Sunday to Saturday
